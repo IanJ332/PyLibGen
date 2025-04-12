@@ -1,0 +1,28 @@
+# API and networking
+requests>=2.28.1
+aiohttp>=3.8.3
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.23.4
+
+# Database
+gun-py>=0.1.0  # GUN database Python client
+pymongo>=4.3.2  # For local storage if needed
+
+# Text processing and ML
+nltk>=3.7
+scikit-learn>=1.1.2
+transformers>=4.23.1  # For ML.GENERATE_TEXT functionality
+
+# File export
+openpyxl>=3.0.10  # For Excel export support
+pyyaml>=6.0       # For YAML support
+
+# Testing
+pytest>=7.2.0
+pytest-cov>=4.0.0
+
+# Utilities
+tqdm>=4.64.1     # Progress bars
+python-dotenv>=0.21.0  # Environment variable management
