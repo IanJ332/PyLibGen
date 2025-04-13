@@ -125,7 +125,9 @@ class LibGenAPI:
         except requests.RequestException as e:
             logger.error(f"Error getting book details: {e}")
             return None
-    
+
+    # not sure why but it keeps telling me Size: 0.00 MB
+    # see if this version works
     def _parse_html_results(self, html_content: str) -> List[Dict[str, Any]]:
         """
         Parse HTML search results into structured data.
@@ -142,9 +144,13 @@ class LibGenAPI:
             soup = BeautifulSoup(html_content, 'html.parser')
             results = []
             
-            # Find the main table with results
+            # Find the main table with results - updated selector for libgen.is
             table = soup.find('table', class_='c')
             
+            if not table:
+                # Try alternative table structure
+                table = soup.find('table', attrs={'cellpadding': '2', 'cellspacing': '1'})
+                
             if not table:
                 logger.warning("Could not find results table in HTML")
                 return []
@@ -156,36 +162,52 @@ class LibGenAPI:
                 cells = row.find_all('td')
                 
                 # Skip rows with insufficient cells
-                if len(cells) < 9:
+                if len(cells) < 8:
                     continue
                     
-                # Extract book data
+                # Extract book data - adjusted for current libgen.is structure
                 book = {
-                    'id': cells[0].text.strip(),
-                    'author': cells[1].text.strip(),
-                    'title': cells[2].text.strip(),
-                    'publisher': cells[3].text.strip(),
-                    'year': cells[4].text.strip(),
-                    'pages': cells[5].text.strip(),
-                    'language': cells[6].text.strip(),
-                    'size': cells[7].text.strip(),
-                    'extension': cells[8].text.strip(),
+                    'id': cells[0].text.strip() if len(cells) > 0 else '',
+                    'author': cells[1].text.strip() if len(cells) > 1 else '',
+                    'title': cells[2].text.strip() if len(cells) > 2 else '',
+                    'publisher': cells[3].text.strip() if len(cells) > 3 else '',
+                    'year': cells[4].text.strip() if len(cells) > 4 else '',
+                    'pages': cells[5].text.strip() if len(cells) > 5 else '',
+                    'language': cells[6].text.strip() if len(cells) > 6 else '',
+                    'size': cells[7].text.strip() if len(cells) > 7 else '',
+                    'extension': cells[8].text.strip() if len(cells) > 8 else '',
                 }
                 
-                # Extract filesize in bytes for sorting
-                size_text = cells[7].text.strip()
+                # Extract filesize in bytes
+                size_text = book['size']
                 filesize = 0
-                if 'KB' in size_text:
-                    filesize = float(size_text.replace('KB', '').strip()) * 1024
-                elif 'MB' in size_text:
-                    filesize = float(size_text.replace('MB', '').strip()) * 1024 * 1024
+                
+                # Improved size parsing logic
+                if size_text:
+                    size_parts = size_text.split()
+                    if len(size_parts) == 2:
+                        try:
+                            size_value = float(size_parts[0].replace(',', '.'))
+                            size_unit = size_parts[1].upper()
+                            
+                            if 'KB' in size_unit:
+                                filesize = size_value * 1024
+                            elif 'MB' in size_unit:
+                                filesize = size_value * 1024 * 1024
+                            elif 'GB' in size_unit:
+                                filesize = size_value * 1024 * 1024 * 1024
+                            elif 'B' in size_unit:
+                                filesize = size_value
+                        except (ValueError, IndexError):
+                            logger.warning(f"Could not parse size: {size_text}")
                 
                 book['filesize'] = int(filesize)
                 
                 # Extract download link if available
-                link_cell = cells[9] if len(cells) > 9 else None
-                if link_cell and link_cell.find('a'):
-                    book['link'] = link_cell.find('a').get('href', '')
+                if len(cells) > 9:
+                    links = cells[9].find_all('a')
+                    if links:
+                        book['link'] = links[0].get('href', '')
                 
                 results.append(book)
             
