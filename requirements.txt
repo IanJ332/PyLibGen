@@ -7,7 +7,13 @@ pandas>=1.5.0
 numpy>=1.23.4
 
 # Database
-gun-py>=0.1.0  # GUN database Python client
+# GUN 4 Py current have error that run on my desktop, so I comment it seeking for other options
+# The alert shows:
+# ERROR: Could not find a version that satisfies the requirement gun-py>=0.1.0 (from versions: none)
+# ERROR: No matching distribution found for gun-py>=0.1.0
+# This is normal ignore(maybe fix later on)
+# gun-py>=0.1.0  # GUN database Python client
+
 pymongo>=4.3.2  # For local storage if needed
 
 # Text processing and ML

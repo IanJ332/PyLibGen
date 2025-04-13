@@ -162,7 +162,8 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 // Get list of output files
 app.get('/api/files', (req, res) => {
   const outputDir = path.join(__dirname, '..', 'output');
-  
+  res.json({ status: 'ok', message: 'Server is running properly' });
+
   if (!fs.existsSync(outputDir)) {
     return res.json({ files: [] });
   }
@@ -188,8 +189,9 @@ app.get('/api/files', (req, res) => {
 
 // Download a file
 app.get('/api/files/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, '..', 'output', filename);
+  // const filename = req.params.filename;
+  // const filePath = path.join(__dirname, '..', 'output', filename);
+  const outputDir = path.join(__dirname, '..', 'output');
   
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found' });
@@ -211,6 +213,22 @@ app.delete('/api/files/:filename', (req, res) => {
   res.json({ success: true });
 });
 
+// Testing GUN realted with ISSUES_1
+app.get('/api/test-gun', (req, res) => {
+  // Test writing to GUN
+  const testData = { test: 'data', timestamp: Date.now() };
+  gun.get('test').put(testData);
+  
+  // Test reading from GUN
+  gun.get('test').once((data) => {
+    res.json({ 
+      status: 'ok', 
+      message: 'GUN database test', 
+      data: data 
+    });
+  });
+});
+
 // Catch-all route for SPA
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -227,16 +245,16 @@ async function runPythonScript(args) {
     // Get the path to the Python script
     const scriptPath = path.join(__dirname, '..', 'libgen_explorer', 'cli.py');
     
-    // Ensure we use the correct Python executable (activate virtual environment if available)
+    // Ensure we use the correct Python executable
     let pythonExecutable = 'python';
     
     // Check if we're in a virtual environment
-    const venvPython = path.join(__dirname, '..', 'env', 'bin', 'python');
+    const venvPython = path.join(__dirname, '..', 'venv', 'bin', 'python');
     if (fs.existsSync(venvPython)) {
       pythonExecutable = venvPython;
     } else {
       // On Windows, check for Scripts directory instead
-      const venvPythonWin = path.join(__dirname, '..', 'env', 'Scripts', 'python.exe');
+      const venvPythonWin = path.join(__dirname, '..', 'venv', 'Scripts', 'python.exe');
       if (fs.existsSync(venvPythonWin)) {
         pythonExecutable = venvPythonWin;
       }
@@ -255,16 +273,22 @@ async function runPythonScript(args) {
     
     // Collect stdout data
     pythonProcess.stdout.on('data', (data) => {
-      stdout += data.toString();
+      const chunk = data.toString();
+      stdout += chunk;
+      console.log(`Python stdout: ${chunk}`);
     });
     
     // Collect stderr data
     pythonProcess.stderr.on('data', (data) => {
-      stderr += data.toString();
+      const chunk = data.toString();
+      stderr += chunk;
+      console.error(`Python stderr: ${chunk}`);
     });
     
     // Handle process completion
     pythonProcess.on('close', (code) => {
+      console.log(`Python process exited with code ${code}`);
+      
       if (code !== 0) {
         console.error(`Python script exited with code ${code}`);
         console.error(`stderr: ${stderr}`);
