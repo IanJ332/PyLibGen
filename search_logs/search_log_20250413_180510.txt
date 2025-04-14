@@ -1,0 +1,51 @@
+Time: 2025-04-13 18:05:10
+Query Condition: Python Programming
+Limit the number of results: 5
+Total results found: 25
+
+Query Results.
+-------------
+1. ID	186876
+    Author(s)	Tarek Ziad
+    Title	Expert Python Programming 9781847194947
+    Publisher	Packt Publishing
+    Year	2008
+    Language(s)	English
+    Size	10.00 MB
+    Extension	pdf
+
+2. ID	882098
+    Author(s)	John V. Guttag
+    Title	Introduction to Computation and Programming Using Python [Spring 2013 Edition] 978-0262519632
+    Publisher	MIT Press
+    Year	2013
+    Language(s)	English
+    Size	86.00 MB
+    Extension	pdf
+
+3. ID	208525
+    Author(s)	
+    Title	Bioinformatics Programming Using Python 9780596155797
+    Publisher	Oreilly
+    Year	2009
+    Language(s)	English
+    Size	4.00 MB
+    Extension	pdf
+
+4. ID	205365
+    Author(s)	Wesley Chun
+    Title	Core Python Programming ( ) [2 ed.] 9780132269933, 0132269937
+    Publisher	Prentice Hall
+    Year	2006
+    Language(s)	English
+    Size	5.00 MB
+    Extension	pdf
+
+5. ID	113338
+    Author(s)	Tarek Ziadé
+    Title	Expert Python programming learn best practices to designing, coding, and distributing your Python software 184719494X, 9781847194947
+    Publisher	Packt Publishing
+    Year	2008
+    Language(s)	English
+    Size	10.00 MB
+    Extension	pdf

@@ -1,0 +1,15 @@
+Time: 2025-04-13 18:03:46
+Query Condition: Earth
+Limit the number of results: 1
+Total results found: 25
+
+Query Results.
+-------------
+1. ID	55233
+    Author(s)	Draper P.
+    Title	Deconstructing the Elements with 3ds Max: Create Natural Fire, Earth, Air and Water Without Plug-ins
+    Publisher	
+    Year	2006
+    Language(s)	English
+    Size	115.00 MB
+    Extension	pdf
