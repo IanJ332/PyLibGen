@@ -52,3 +52,6 @@ yarn-debug.log
 output/
 data/
 logs/
+
+# Exclude search logs
+search_logs/
