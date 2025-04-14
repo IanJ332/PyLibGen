@@ -162,7 +162,7 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 // Get list of output files
 app.get('/api/files', (req, res) => {
   const outputDir = path.join(__dirname, '..', 'output');
-  res.json({ status: 'ok', message: 'Server is running properly' });
+  // res.json({ status: 'ok', message: 'Server is running properly' });
 
   if (!fs.existsSync(outputDir)) {
     return res.json({ files: [] });
@@ -243,7 +243,8 @@ app.get('*', (req, res) => {
 async function runPythonScript(args) {
   return new Promise((resolve, reject) => {
     // Get the path to the Python script
-    const scriptPath = path.join(__dirname, '..', 'libgen_explorer', 'cli.py');
+    // const scriptPath = path.join(__dirname, '..', 'libgen_explorer', 'cli.py');
+    const scriptPath = path.join(__dirname, '..', 'libgen-explorer.py');
     
     // Ensure we use the correct Python executable
     let pythonExecutable = 'python';
