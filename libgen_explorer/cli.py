@@ -3,7 +3,8 @@ Command-line interface for LibGen Explorer.
 
 This module provides a command-line interface to search and export data from LibGen.
 """
-
+import pandas as pd
+import numpy as np
 import argparse
 import logging
 import sys
@@ -123,6 +124,14 @@ def search_command(args: argparse.Namespace) -> None:
         # Rate results
         df = rater.rate_results(df, args.query)
         
+        # Get top results (fixed the hardcoded 5)
+        display_limit = min(args.limit, len(df))
+        top_results = rater.get_top_results(df, n=display_limit)
+        
+        # Log search results to a timestamped file
+        log_file = log_search_results(args.query, args.limit, df, top_results)
+        logger.info(f"Search log created at: {log_file}")
+        
         # Export results if requested
         if args.export:
             output_file = args.output if args.output and not os.path.isdir(args.output) else None
@@ -149,9 +158,7 @@ def search_command(args: argparse.Namespace) -> None:
             exporter.export_summary(args.query, df, ratings, keywords, format=summary_format)
             
         # Display top results
-        top_results = rater.get_top_results(df, n=5)
-        
-        print("\nTop 5 Results:")
+        print(f"\nTop {display_limit} Results:")
         print("-------------")
         
         for i, (_, row) in enumerate(top_results.iterrows(), 1):
@@ -166,6 +173,9 @@ def search_command(args: argparse.Namespace) -> None:
                 print(f"   Format: {row['extension']}, Size: {size_mb:.2f} MB")
                 
             print()
+        
+        # Optionally, print path to log file
+        print(f"\nSearch log saved to: {log_file}")
             
     except Exception as e:
         logger.error(f"Error during search command: {e}")
@@ -244,6 +254,74 @@ def filter_command(args: argparse.Namespace) -> None:
             
     except Exception as e:
         logger.error(f"Error during filter command: {e}")
+
+def log_search_results(query: str, limit: int, results_df: pd.DataFrame, top_results: pd.DataFrame) -> str:
+    """
+    Log search results to a text file with timestamp as filename.
+    
+    Args:
+        query: The search query
+        limit: The limit parameter used
+        results_df: Full results DataFrame
+        top_results: DataFrame with top N results
+        
+    Returns:
+        Path to the created log file
+    """
+    import datetime
+    
+    # Create timestamp for filename
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_filename = f"search_log_{timestamp}.txt"
+    
+    # Create output directory if it doesn't exist
+    output_dir = os.path.join(os.getcwd(), "search_logs")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        
+    log_path = os.path.join(output_dir, log_filename)
+    
+    # Format the log content
+    with open(log_path, "w", encoding="utf-8") as f:
+        # Header information
+        current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        f.write(f"Time: {current_time}\n")
+        f.write(f"Query Condition: {query}\n")
+        f.write(f"Limit the number of results: {limit}\n")
+        f.write(f"Total results found: {len(results_df)}\n\n")
+        
+        # Results header
+        f.write("Query Results.\n")
+        f.write("-------------\n")
+        
+        # Write top results in the structured format
+        for i, (_, row) in enumerate(top_results.iterrows(), 1):
+            f.write(f"{i}. ID\t{row.get('id', 'N/A')}\n")
+            f.write(f"    Author(s)\t{row.get('author', 'N/A')}\n")
+            
+            # Title might be split over multiple lines if it's long
+            title = row.get('title', 'N/A')
+            f.write(f"    Title\t{title}\n")
+            
+            f.write(f"    Publisher\t{row.get('publisher', 'N/A')}\n")
+            f.write(f"    Year\t{row.get('year', 'N/A')}\n")
+            f.write(f"    Language(s)\t{row.get('language', 'N/A')}\n")
+            
+            # Format file size
+            if 'filesize' in row:
+                size_mb = row['filesize'] / (1024 * 1024) if row['filesize'] else 0
+                f.write(f"    Size\t{size_mb:.2f} MB\n")
+            else:
+                f.write(f"    Size\tN/A\n")
+                
+            f.write(f"    Extension\t{row.get('extension', 'N/A')}\n")
+            
+            # Add an empty line between entries
+            if i < len(top_results):
+                f.write("\n")
+    
+    logger.info(f"Search log saved to {log_path}")
+    return log_path
         
 def analyze_command(args: argparse.Namespace) -> None:
     """
