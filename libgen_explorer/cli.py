@@ -158,24 +158,30 @@ def search_command(args: argparse.Namespace) -> None:
             exporter.export_summary(args.query, df, ratings, keywords, format=summary_format)
             
         # Display top results
+        # Display top results
         print(f"\nTop {display_limit} Results:")
         print("-------------")
-        
+
         for i, (_, row) in enumerate(top_results.iterrows(), 1):
-            title = row.get('title', 'Unknown title')
-            author = row.get('author', 'Unknown author')
-            year = row.get('year', 'Unknown year')
+            print(f"{i}. ID\t{row.get('id', 'N/A')}")
+            print(f"    Author(s)\t{row.get('author', 'N/A')}")
+            print(f"    Title\t{row.get('title', 'N/A')}")
+            print(f"    Publisher\t{row.get('publisher', 'N/A')}")
+            print(f"    Year\t{row.get('year', 'N/A')}")
+            print(f"    Language(s)\t{row.get('language', 'N/A')}")
             
-            print(f"{i}. {title} by {author} ({year})")
-            
-            if 'extension' in row and 'filesize' in row:
+            # Format file size - only use one block
+            if 'filesize' in row:
                 size_mb = row['filesize'] / (1024 * 1024) if row['filesize'] else 0
-                print(f"   Format: {row['extension']}, Size: {size_mb:.2f} MB")
+                print(f"    Size\t{size_mb:.2f} MB")
+            else:
+                print(f"    Size\tN/A")
                 
-            print()
-        
-        # Optionally, print path to log file
-        print(f"\nSearch log saved to: {log_file}")
+            print(f"    Extension\t{row.get('extension', 'N/A')}")
+            
+            # Add an empty line between entries
+            if i < len(top_results):
+                print()
             
     except Exception as e:
         logger.error(f"Error during search command: {e}")
