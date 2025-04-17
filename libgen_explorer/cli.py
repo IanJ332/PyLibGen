@@ -178,7 +178,11 @@ def search_command(args: argparse.Namespace) -> None:
                 print(f"    Size\tN/A")
                 
             print(f"    Extension\t{row.get('extension', 'N/A')}")
-            
+
+            # Add URL/link information - this is the new part
+            if 'link' in row:
+               print(f"    URL:\t{row.get('link', 'N/A')}")
+
             # Add an empty line between entries
             if i < len(top_results):
                 print()
@@ -322,6 +326,10 @@ def log_search_results(query: str, limit: int, results_df: pd.DataFrame, top_res
                 
             f.write(f"    Extension\t{row.get('extension', 'N/A')}\n")
             
+            # Add URL/link information - this is the new part
+            if 'link' in row:
+                f.write(f"    URL:\t{row.get('link', 'N/A')}\n")
+
             # Add an empty line between entries
             if i < len(top_results):
                 f.write("\n")

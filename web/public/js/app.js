@@ -200,6 +200,15 @@ function displaySearchResults(output) {
             }
             continue;
         }
+
+        // Check for URL information
+        if (currentResult && line.trim().startsWith('URL:')) {
+            const urlMatch = line.match(/URL:\s+(.*)/);
+            if (urlMatch) {
+                currentResult.url = urlMatch[1];
+            }
+            continue;
+        }
         
         // Empty line after result means end of current result
         if (currentResult && line.trim() === '') {
@@ -226,6 +235,9 @@ function displaySearchResults(output) {
                         ${result.format ? `
                             <span><i class="fas fa-file"></i> ${result.format}</span>
                             <span><i class="fas fa-weight"></i> ${result.size} MB</span>
+                        ` : ''}
+                        ${result.url ? `
+                            <span><i class="fas fa-link"></i> <a href="${result.url}" target="_blank">Download</a></span>
                         ` : ''}
                     </div>
                 </div>
