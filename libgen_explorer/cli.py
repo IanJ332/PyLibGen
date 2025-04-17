@@ -158,7 +158,6 @@ def search_command(args: argparse.Namespace) -> None:
             exporter.export_summary(args.query, df, ratings, keywords, format=summary_format)
             
         # Display top results
-        # Display top results
         print(f"\nTop {display_limit} Results:")
         print("-------------")
 
@@ -169,21 +168,38 @@ def search_command(args: argparse.Namespace) -> None:
             print(f"    Publisher\t{row.get('publisher', 'N/A')}")
             print(f"    Year\t{row.get('year', 'N/A')}")
             print(f"    Language(s)\t{row.get('language', 'N/A')}")
-            
-            # Format file size - only use one block
+
+            # Format file size
             if 'filesize' in row:
                 size_mb = row['filesize'] / (1024 * 1024) if row['filesize'] else 0
                 print(f"    Size\t{size_mb:.2f} MB")
             else:
                 print(f"    Size\tN/A")
-                
+
             print(f"    Extension\t{row.get('extension', 'N/A')}")
 
-            # Add URL/link information - this is the new part
+            # Display main link
             if 'link' in row:
-               print(f"    URL:\t{row.get('link', 'N/A')}")
+                print(f"    URL:\t{row.get('link', 'N/A')}")
 
-            # Add an empty line between entries
+            # Display additional download links if available
+            if 'download_links' in row and isinstance(row['download_links'], dict):
+                dl_links = row['download_links']
+
+                if 'get' in dl_links:
+                    print(f"    GET Download:\t{dl_links['get']}")
+
+                print(f"    IPFS Download Options:")
+                if 'ipfs_cloudflare' in dl_links:
+                    print(f"      - Cloudflare:\t{dl_links['ipfs_cloudflare']}")
+                if 'ipfs_io' in dl_links:
+                    print(f"      - IPFS.io:\t{dl_links['ipfs_io']}")
+                if 'ipfs_pinata' in dl_links:
+                    print(f"      - Pinata:\t{dl_links['ipfs_pinata']}")
+
+                if 'tor_mirror' in dl_links:
+                    print(f"    Tor Mirror:\t{dl_links['tor_mirror']}")
+
             if i < len(top_results):
                 print()
             
@@ -308,31 +324,50 @@ def log_search_results(query: str, limit: int, results_df: pd.DataFrame, top_res
         for i, (_, row) in enumerate(top_results.iterrows(), 1):
             f.write(f"{i}. ID\t{row.get('id', 'N/A')}\n")
             f.write(f"    Author(s)\t{row.get('author', 'N/A')}\n")
-            
+
             # Title might be split over multiple lines if it's long
             title = row.get('title', 'N/A')
             f.write(f"    Title\t{title}\n")
-            
+
             f.write(f"    Publisher\t{row.get('publisher', 'N/A')}\n")
             f.write(f"    Year\t{row.get('year', 'N/A')}\n")
             f.write(f"    Language(s)\t{row.get('language', 'N/A')}\n")
-            
+
             # Format file size
             if 'filesize' in row:
                 size_mb = row['filesize'] / (1024 * 1024) if row['filesize'] else 0
                 f.write(f"    Size\t{size_mb:.2f} MB\n")
             else:
                 f.write(f"    Size\tN/A\n")
-                
+
             f.write(f"    Extension\t{row.get('extension', 'N/A')}\n")
-            
-            # Add URL/link information - this is the new part
+
+            # Write download link
             if 'link' in row:
                 f.write(f"    URL:\t{row.get('link', 'N/A')}\n")
+
+            # Write additional download links if available
+            if 'download_links' in row and isinstance(row['download_links'], dict):
+                dl_links = row['download_links']
+
+                if 'get' in dl_links:
+                    f.write(f"    GET Download:\t{dl_links['get']}\n")
+
+                f.write(f"    IPFS Download Options:\n")
+                if 'ipfs_cloudflare' in dl_links:
+                    f.write(f"      - Cloudflare:\t{dl_links['ipfs_cloudflare']}\n")
+                if 'ipfs_io' in dl_links:
+                    f.write(f"      - IPFS.io:\t{dl_links['ipfs_io']}\n")
+                if 'ipfs_pinata' in dl_links:
+                    f.write(f"      - Pinata:\t{dl_links['ipfs_pinata']}\n")
+
+                if 'tor_mirror' in dl_links:
+                    f.write(f"    Tor Mirror:\t{dl_links['tor_mirror']}\n")
 
             # Add an empty line between entries
             if i < len(top_results):
                 f.write("\n")
+
     
     logger.info(f"Search log saved to {log_path}")
     return log_path

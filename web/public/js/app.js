@@ -156,71 +156,99 @@ function displaySearchResults(output) {
     
     if (!resultsContainer) return;
     
-    // Parse the output to extract results (this is a simplified approach)
-    // In a real implementation, you would parse a structured JSON response
-    
-    // Split by newlines and look for results
-    const lines = output.split('\n');
-    let inResults = false;
-    let results = [];
-    let currentResult = null;
-    
-    for (const line of lines) {
-        // Check if we're in the results section
-        if (line.includes('Top 5 Results:') || line.includes('Top Results:')) {
-            inResults = true;
-            continue;
-        }
-        
-        if (!inResults) continue;
-        
-        // Check for result entry (numbered items)
-        const resultMatch = line.match(/^(\d+)\.\s+(.*?)\s+by\s+(.*?)\s+\((\d+)\)$/);
-        if (resultMatch) {
-            if (currentResult) {
-                results.push(currentResult);
-            }
-            
-            currentResult = {
-                number: resultMatch[1],
-                title: resultMatch[2],
-                author: resultMatch[3],
-                year: resultMatch[4],
-                details: []
-            };
-            continue;
-        }
-        
-        // Check for details
-        if (currentResult && line.trim().startsWith('Format:')) {
-            const detailsMatch = line.match(/Format:\s+(.*?),\s+Size:\s+(.*?)\s+MB/);
-            if (detailsMatch) {
-                currentResult.format = detailsMatch[1];
-                currentResult.size = detailsMatch[2];
-            }
-            continue;
-        }
+// Parse the output to extract results
+const lines = output.split('\n');
+let inResults = false;
+let results = [];
+let currentResult = null;
 
-        // Check for URL information
-        if (currentResult && line.trim().startsWith('URL:')) {
-            const urlMatch = line.match(/URL:\s+(.*)/);
-            if (urlMatch) {
-                currentResult.url = urlMatch[1];
-            }
-            continue;
+for (const line of lines) {
+    // Check if we're in the results section
+    if (line.includes('Top 5 Results:') || line.includes('Top Results:') || line.includes('Top ') && line.includes(' Results:')) {
+        inResults = true;
+        continue;
+    }
+    
+    if (!inResults) continue;
+    
+    // Check for result entry (starts with number followed by ID)
+    const idMatch = line.match(/^(\d+)\.\s+ID\s+(.*?)$/);
+    if (idMatch) {
+        if (currentResult) {
+            results.push(currentResult);
         }
         
-        // Empty line after result means end of current result
-        if (currentResult && line.trim() === '') {
-            results.push(currentResult);
-            currentResult = null;
+        currentResult = {
+            number: idMatch[1],
+            id: idMatch[2].trim(),
+            ipfsLinks: {}
+        };
+        continue;
+    }
+    
+    // Match other book details
+    if (currentResult) {
+        if (line.trim().startsWith('Author(s)')) {
+            const authorMatch = line.match(/Author\(s\)\s+(.*?)$/);
+            if (authorMatch) currentResult.author = authorMatch[1].trim();
+        }
+        else if (line.trim().startsWith('Title')) {
+            const titleMatch = line.match(/Title\s+(.*?)$/);
+            if (titleMatch) currentResult.title = titleMatch[1].trim();
+        }
+        else if (line.trim().startsWith('Year')) {
+            const yearMatch = line.match(/Year\s+(.*?)$/);
+            if (yearMatch) currentResult.year = yearMatch[1].trim();
+        }
+        else if (line.trim().startsWith('Size')) {
+            const sizeMatch = line.match(/Size\s+(.*?)$/);
+            if (sizeMatch) currentResult.size = sizeMatch[1].trim();
+        }
+        else if (line.trim().startsWith('Extension')) {
+            const formatMatch = line.match(/Extension\s+(.*?)$/);
+            if (formatMatch) currentResult.format = formatMatch[1].trim();
+        }
+        // Match main download URL
+        else if (line.trim().startsWith('URL:')) {
+            const urlMatch = line.match(/URL:\s+(.*?)$/);
+            if (urlMatch) currentResult.url = urlMatch[1].trim();
+        }
+        // Match GET download link
+        else if (line.trim().startsWith('GET Download:')) {
+            const getLinkMatch = line.match(/GET Download:\s+(.*?)$/);
+            if (getLinkMatch) currentResult.getLink = getLinkMatch[1].trim();
+        }
+        // Match IPFS links
+        else if (line.trim().includes('Cloudflare:')) {
+            const cloudflareMatch = line.match(/Cloudflare:\s+(.*?)$/);
+            if (cloudflareMatch) currentResult.ipfsLinks.cloudflare = cloudflareMatch[1].trim();
+        }
+        else if (line.trim().includes('IPFS.io:')) {
+            const ipfsioMatch = line.match(/IPFS\.io:\s+(.*?)$/);
+            if (ipfsioMatch) currentResult.ipfsLinks.ipfsio = ipfsioMatch[1].trim();
+        }
+        else if (line.trim().includes('Pinata:')) {
+            const pinataMatch = line.match(/Pinata:\s+(.*?)$/);
+            if (pinataMatch) currentResult.ipfsLinks.pinata = pinataMatch[1].trim();
+        }
+        // Match Tor mirror link
+        else if (line.trim().startsWith('Tor Mirror:')) {
+            const torMatch = line.match(/Tor Mirror:\s+(.*?)$/);
+            if (torMatch) currentResult.torMirror = torMatch[1].trim();
         }
     }
     
-    // Add the last result if it exists
-    if (currentResult) {
+    // Empty line after result means end of current result
+    if (currentResult && line.trim() === '') {
         results.push(currentResult);
+        currentResult = null;
     }
+}
+
+// Add the last result if it exists
+if (currentResult) {
+    results.push(currentResult);
+}
     
     // Build HTML for results
     if (results.length > 0) {
@@ -232,12 +260,42 @@ function displaySearchResults(output) {
                     <div class="result-title">${result.number}. ${result.title}</div>
                     <div class="result-author">by ${result.author} (${result.year})</div>
                     <div class="result-meta">
-                        ${result.format ? `
-                            <span><i class="fas fa-file"></i> ${result.format}</span>
-                            <span><i class="fas fa-weight"></i> ${result.size} MB</span>
-                        ` : ''}
+                        ${result.format ? `<span><i class="fas fa-file"></i> ${result.format}</span>` : ''}
+                        ${result.size ? `<span><i class="fas fa-weight"></i> ${result.size} MB</span>` : ''}
+                    </div>
+                    <div class="result-links mt-2">
                         ${result.url ? `
-                            <span><i class="fas fa-link"></i> <a href="${result.url}" target="_blank">Download</a></span>
+                            <a href="${result.url}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                <i class="fas fa-link"></i> Main Link
+                            </a>
+                        ` : ''}
+                        ${result.getLink ? `
+                            <a href="${result.getLink}" class="btn btn-sm btn-success me-2" target="_blank">
+                                <i class="fas fa-download"></i> GET
+                            </a>
+                        ` : ''}
+                        ${result.ipfsLinks ? `
+                            <div class="dropdown d-inline-block me-2">
+                                <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" id="dropdownIpfs${result.number}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-network-wired"></i> IPFS
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownIpfs${result.number}">
+                                    ${result.ipfsLinks.cloudflare ? `
+                                        <li><a class="dropdown-item" href="${result.ipfsLinks.cloudflare}" target="_blank">Cloudflare</a></li>
+                                    ` : ''}
+                                    ${result.ipfsLinks.ipfsio ? `
+                                        <li><a class="dropdown-item" href="${result.ipfsLinks.ipfsio}" target="_blank">IPFS.io</a></li>
+                                    ` : ''}
+                                    ${result.ipfsLinks.pinata ? `
+                                        <li><a class="dropdown-item" href="${result.ipfsLinks.pinata}" target="_blank">Pinata</a></li>
+                                    ` : ''}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${result.torMirror ? `
+                            <a href="${result.torMirror}" class="btn btn-sm btn-outline-dark" target="_blank">
+                                <i class="fas fa-mask"></i> Tor Mirror
+                            </a>
                         ` : ''}
                     </div>
                 </div>
@@ -245,15 +303,6 @@ function displaySearchResults(output) {
         }
         
         resultsContainer.innerHTML = html;
-    } else {
-        // No structured results found, display raw output
-        resultsContainer.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                Could not parse structured results. Raw output:
-            </div>
-            <pre class="bg-light p-3 rounded">${output}</pre>
-        `;
     }
 }
 
