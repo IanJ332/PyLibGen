@@ -162,8 +162,7 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 // Get list of output files
 app.get('/api/files', (req, res) => {
   const outputDir = path.join(__dirname, '..', 'output');
-  res.json({ status: 'ok', message: 'Server is running properly' });
-
+  
   if (!fs.existsSync(outputDir)) {
     return res.json({ files: [] });
   }
@@ -189,9 +188,8 @@ app.get('/api/files', (req, res) => {
 
 // Download a file
 app.get('/api/files/:filename', (req, res) => {
-  // const filename = req.params.filename;
-  // const filePath = path.join(__dirname, '..', 'output', filename);
-  const outputDir = path.join(__dirname, '..', 'output');
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, '..', 'output', filename);
   
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found' });
