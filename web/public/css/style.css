@@ -289,4 +289,73 @@ textarea.form-control {
         flex-direction: column;
         gap: 5px;
     }
+
+.result-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.result-links .btn {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.result-links .btn i {
+    margin-right: 5px;
+}
+
+/* Style for GET button to make it stand out */
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+}
+
+/* IPFS dropdown styling */
+.dropdown-menu {
+    min-width: 150px;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-item {
+    border-radius: 4px;
+    padding: 5px 10px;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .result-links {
+        flex-direction: column;
+    }
+    
+    .result-links .btn {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 5px;
+    }
+    
+    .dropdown {
+        width: 100%;
+    }
+    
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+}
 }

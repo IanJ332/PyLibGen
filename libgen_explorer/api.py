@@ -127,6 +127,7 @@ class LibGenAPI:
             return None
 
     # not sure why but it keeps telling me Size: 0.00 MB
+    # Update at 4.17, Jisheng, Task: just did fetch URL.
     # see if this version works
     def _parse_html_results(self, html_content: str) -> List[Dict[str, Any]]:
         """
@@ -178,11 +179,31 @@ class LibGenAPI:
                     'extension': cells[8].text.strip() if len(cells) > 8 else '',
                 }
                 
+                # Extract download links
+                download_links = {}
+                
+                # Extract the main link if available
+                if len(cells) > 9:
+                    links = cells[9].find_all('a')
+                    if links:
+                        book['link'] = links[0].get('href', '')
+                        
+                        try:
+                            download_links['get'] = f"https://library.lol/main/{book['link'].split('/')[-1]}"
+                        except Exception as e:
+                            logger.warning(f"Could not extract GET link: {e}")
+                        
+                        download_links['ipfs_cloudflare'] = f"https://cloudflare-ipfs.com/ipfs/{book['id']}"
+                        download_links['ipfs_io'] = f"https://ipfs.io/ipfs/{book['id']}"
+                        download_links['ipfs_pinata'] = f"https://gateway.pinata.cloud/ipfs/{book['id']}"
+                        download_links['tor_mirror'] = f"http://libgenfrialc7tguyjywa36vtrdcplxydrxnm3f6zjbwxprqsycqad.onion/main/{book['id']}"
+                
+                book['download_links'] = download_links
+                
                 # Extract filesize in bytes
                 size_text = book['size']
                 filesize = 0
                 
-                # Improved size parsing logic
                 if size_text:
                     size_parts = size_text.split()
                     if len(size_parts) == 2:
@@ -202,12 +223,6 @@ class LibGenAPI:
                             logger.warning(f"Could not parse size: {size_text}")
                 
                 book['filesize'] = int(filesize)
-                
-                # Extract download link if available
-                if len(cells) > 9:
-                    links = cells[9].find_all('a')
-                    if links:
-                        book['link'] = links[0].get('href', '')
                 
                 results.append(book)
             

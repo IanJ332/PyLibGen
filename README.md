@@ -45,12 +45,15 @@ Nowadays, many CS books are available as open-source resources, and some textboo
 3. Install Python dependencies:
    ```bash
    pip install -r requirements.txt
+   pip install pandas numpy beautifulsoup4 requests aiohttp
+   
    ```
 
 4. Install Node.js dependencies (for web interface):
    ```bash
    cd web
    npm install
+   npm install express
    cd ..
    ```
 
