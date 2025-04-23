@@ -6,6 +6,11 @@
 // Initialize GUN
 const gun = Gun();
 
+// Current view (table or list)
+let currentView = 'list';
+// Store parsed results for easy switching between views
+let parsedResults = [];
+
 document.addEventListener('DOMContentLoaded', function() {
     // Navigation
     setupNavigation();
@@ -64,6 +69,27 @@ function setupSearchForm() {
     
     if (!searchForm) return;
     
+    // Add event listeners for view toggle buttons
+    document.querySelectorAll('.view-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const view = this.dataset.view;
+            
+            // Update active button
+            document.querySelectorAll('.view-toggle').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Switch view
+            currentView = view;
+            
+            // Redisplay results if we have them
+            if (parsedResults.length > 0) {
+                displayResults(parsedResults);
+            }
+        });
+    });
+    
     searchForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -112,10 +138,13 @@ function setupSearchForm() {
                 throw new Error(data.error || 'Failed to perform search');
             }
             
+            // Add these console.log statements here
+            console.log("Search response data:", data);
+            
             // Update results count
             const resultsCountElement = resultsSection.querySelector('.results-count');
             if (resultsCountElement && data.output) {
-                // Extract number of results from output (this is a simplified approach)
+                // Extract number of results from output
                 const match = data.output.match(/Found (\d+) results/);
                 if (match && match[1]) {
                     resultsCountElement.textContent = match[1];
@@ -124,8 +153,14 @@ function setupSearchForm() {
                 }
             }
             
-            // Display results
-            displaySearchResults(data.output || 'No output from search command');
+            // Parse results from output
+            parsedResults = parseSearchResults(data.output || '');
+            
+            // Add this console.log after parsing
+            console.log("Parsed results:", parsedResults);
+            
+            // Display results based on current view
+            displayResults(parsedResults);
             
             // If files were exported, refresh files list
             if (exportFormat) {
@@ -147,139 +182,221 @@ function setupSearchForm() {
 }
 
 /**
- * Display search results in the results container
+ * Parse search results from command output
  * 
  * @param {string} output - Output from the search command
+ * @returns {Array} - Array of parsed result objects
  */
-function displaySearchResults(output) {
+function parseSearchResults(output) {
+    const lines = output.split('\n');
+    let inResults = false;
+    let results = [];
+    let currentResult = null;
+
+    for (const line of lines) {
+        // Check if we're in the results section
+        if (line.includes('Top Results:') || line.includes('Top ') && line.includes(' Results:')) {
+            inResults = true;
+            continue;
+        }
+        
+        if (!inResults) continue;
+        
+        // Check for result entry (starts with number followed by ID)
+        const idMatch = line.match(/^(\d+)\.\s+ID\s+(.*?)$/);
+        if (idMatch) {
+            if (currentResult) {
+                results.push(currentResult);
+            }
+            
+            currentResult = {
+                number: idMatch[1],
+                id: idMatch[2].trim(),
+                ipfsLinks: {}
+            };
+            continue;
+        }
+        
+        // Match other book details
+        if (currentResult) {
+            if (line.trim().startsWith('Author(s)')) {
+                const authorMatch = line.match(/Author\(s\)\s+(.*?)$/);
+                if (authorMatch) currentResult.author = authorMatch[1].trim();
+            }
+            else if (line.trim().startsWith('Title')) {
+                const titleMatch = line.match(/Title\s+(.*?)$/);
+                if (titleMatch) currentResult.title = titleMatch[1].trim();
+            }
+            else if (line.trim().startsWith('Publisher')) {
+                const publisherMatch = line.match(/Publisher\s+(.*?)$/);
+                if (publisherMatch) currentResult.publisher = publisherMatch[1].trim();
+            }
+            else if (line.trim().startsWith('Year')) {
+                const yearMatch = line.match(/Year\s+(.*?)$/);
+                if (yearMatch) currentResult.year = yearMatch[1].trim();
+            }
+            else if (line.trim().startsWith('Language')) {
+                const langMatch = line.match(/Language\s+(.*?)$/);
+                if (langMatch) currentResult.language = langMatch[1].trim();
+            }
+            else if (line.trim().startsWith('Size')) {
+                const sizeMatch = line.match(/Size\s+(.*?)$/);
+                if (sizeMatch) currentResult.size = sizeMatch[1].trim();
+            }
+            else if (line.trim().startsWith('Extension')) {
+                const formatMatch = line.match(/Extension\s+(.*?)$/);
+                if (formatMatch) currentResult.format = formatMatch[1].trim();
+            }
+            // Match main download URL
+            else if (line.trim().startsWith('URL:')) {
+                const urlMatch = line.match(/URL:\s+(.*?)$/);
+                if (urlMatch) currentResult.url = urlMatch[1].trim();
+            }
+            // Match GET download link
+            else if (line.trim().startsWith('GET Download:')) {
+                const getLinkMatch = line.match(/GET Download:\s+(.*?)$/);
+                if (getLinkMatch) currentResult.getLink = getLinkMatch[1].trim();
+            }
+            // Match IPFS links
+            else if (line.trim().includes('Cloudflare:')) {
+                const cloudflareMatch = line.match(/Cloudflare:\s+(.*?)$/);
+                if (cloudflareMatch) currentResult.ipfsLinks.cloudflare = cloudflareMatch[1].trim();
+            }
+            else if (line.trim().includes('IPFS.io:')) {
+                const ipfsioMatch = line.match(/IPFS\.io:\s+(.*?)$/);
+                if (ipfsioMatch) currentResult.ipfsLinks.ipfsio = ipfsioMatch[1].trim();
+            }
+            else if (line.trim().includes('Pinata:')) {
+                const pinataMatch = line.match(/Pinata:\s+(.*?)$/);
+                if (pinataMatch) currentResult.ipfsLinks.pinata = pinataMatch[1].trim();
+            }
+            // Match Tor mirror link
+            else if (line.trim().startsWith('Tor Mirror:')) {
+                const torMatch = line.match(/Tor Mirror:\s+(.*?)$/);
+                if (torMatch) currentResult.torMirror = torMatch[1].trim();
+            }
+        }
+        
+        // Empty line after result means end of current result
+        if (currentResult && line.trim() === '') {
+            results.push(currentResult);
+            currentResult = null;
+        }
+    }
+
+    // Add the last result if it exists
+    if (currentResult) {
+        results.push(currentResult);
+    }
+    
+    return results;
+}
+
+/**
+ * Display results based on current view
+ * 
+ * @param {Array} results - Array of parsed result objects
+ */
+function displayResults(results) {
     const resultsContainer = document.querySelector('.results-container');
     
     if (!resultsContainer) return;
     
-// Parse the output to extract results
-const lines = output.split('\n');
-let inResults = false;
-let results = [];
-let currentResult = null;
-
-for (const line of lines) {
-    // Check if we're in the results section
-    if (line.includes('Top 5 Results:') || line.includes('Top Results:') || line.includes('Top ') && line.includes(' Results:')) {
-        inResults = true;
-        continue;
+    if (results.length === 0) {
+        resultsContainer.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No results found. Try modifying your search query.
+            </div>
+            
+            <!-- Add empty table just to demonstrate the table view -->
+            <div class="table-view ${currentView === 'table' ? '' : 'd-none'}">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Author(s)</th>
+                                <th>Year</th>
+                                <th>Publisher</th>
+                                <th>Format</th>
+                                <th>Size</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" class="text-center">No results found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        return;
     }
     
-    if (!inResults) continue;
-    
-    // Check for result entry (starts with number followed by ID)
-    const idMatch = line.match(/^(\d+)\.\s+ID\s+(.*?)$/);
-    if (idMatch) {
-        if (currentResult) {
-            results.push(currentResult);
-        }
-        
-        currentResult = {
-            number: idMatch[1],
-            id: idMatch[2].trim(),
-            ipfsLinks: {}
-        };
-        continue;
-    }
-    
-    // Match other book details
-    if (currentResult) {
-        if (line.trim().startsWith('Author(s)')) {
-            const authorMatch = line.match(/Author\(s\)\s+(.*?)$/);
-            if (authorMatch) currentResult.author = authorMatch[1].trim();
-        }
-        else if (line.trim().startsWith('Title')) {
-            const titleMatch = line.match(/Title\s+(.*?)$/);
-            if (titleMatch) currentResult.title = titleMatch[1].trim();
-        }
-        else if (line.trim().startsWith('Year')) {
-            const yearMatch = line.match(/Year\s+(.*?)$/);
-            if (yearMatch) currentResult.year = yearMatch[1].trim();
-        }
-        else if (line.trim().startsWith('Size')) {
-            const sizeMatch = line.match(/Size\s+(.*?)$/);
-            if (sizeMatch) currentResult.size = sizeMatch[1].trim();
-        }
-        else if (line.trim().startsWith('Extension')) {
-            const formatMatch = line.match(/Extension\s+(.*?)$/);
-            if (formatMatch) currentResult.format = formatMatch[1].trim();
-        }
-        // Match main download URL
-        else if (line.trim().startsWith('URL:')) {
-            const urlMatch = line.match(/URL:\s+(.*?)$/);
-            if (urlMatch) currentResult.url = urlMatch[1].trim();
-        }
-        // Match GET download link
-        else if (line.trim().startsWith('GET Download:')) {
-            const getLinkMatch = line.match(/GET Download:\s+(.*?)$/);
-            if (getLinkMatch) currentResult.getLink = getLinkMatch[1].trim();
-        }
-        // Match IPFS links
-        else if (line.trim().includes('Cloudflare:')) {
-            const cloudflareMatch = line.match(/Cloudflare:\s+(.*?)$/);
-            if (cloudflareMatch) currentResult.ipfsLinks.cloudflare = cloudflareMatch[1].trim();
-        }
-        else if (line.trim().includes('IPFS.io:')) {
-            const ipfsioMatch = line.match(/IPFS\.io:\s+(.*?)$/);
-            if (ipfsioMatch) currentResult.ipfsLinks.ipfsio = ipfsioMatch[1].trim();
-        }
-        else if (line.trim().includes('Pinata:')) {
-            const pinataMatch = line.match(/Pinata:\s+(.*?)$/);
-            if (pinataMatch) currentResult.ipfsLinks.pinata = pinataMatch[1].trim();
-        }
-        // Match Tor mirror link
-        else if (line.trim().startsWith('Tor Mirror:')) {
-            const torMatch = line.match(/Tor Mirror:\s+(.*?)$/);
-            if (torMatch) currentResult.torMirror = torMatch[1].trim();
-        }
-    }
-    
-    // Empty line after result means end of current result
-    if (currentResult && line.trim() === '') {
-        results.push(currentResult);
-        currentResult = null;
+    if (currentView === 'table') {
+        displayTableView(results, resultsContainer);
+    } else {
+        displayListView(results, resultsContainer);
     }
 }
 
-// Add the last result if it exists
-if (currentResult) {
-    results.push(currentResult);
-}
+/**
+ * Display results in table view
+ * 
+ * @param {Array} results - Array of parsed result objects
+ * @param {HTMLElement} container - Container element to display results in
+ */
+function displayTableView(results, container) {
+    let html = `
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Author(s)</th>
+                        <th>Year</th>
+                        <th>Publisher</th>
+                        <th>Format</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
     
-    // Build HTML for results
-    if (results.length > 0) {
-        let html = '';
-        
-        for (const result of results) {
-            html += `
-                <div class="result-item">
-                    <div class="result-title">${result.number}. ${result.title}</div>
-                    <div class="result-author">by ${result.author} (${result.year})</div>
-                    <div class="result-meta">
-                        ${result.format ? `<span><i class="fas fa-file"></i> ${result.format}</span>` : ''}
-                        ${result.size ? `<span><i class="fas fa-weight"></i> ${result.size} MB</span>` : ''}
-                    </div>
-                    <div class="result-links mt-2">
+    for (const result of results) {
+        html += `
+            <tr>
+                <td>${result.number}</td>
+                <td class="title-cell">${result.title || 'N/A'}</td>
+                <td class="author-cell">${result.author || 'N/A'}</td>
+                <td>${result.year || 'N/A'}</td>
+                <td class="publisher-cell">${result.publisher || 'N/A'}</td>
+                <td>${result.format || 'N/A'}</td>
+                <td>${result.size || 'N/A'}</td>
+                <td>
+                    <div class="btn-group">
                         ${result.url ? `
-                            <a href="${result.url}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                <i class="fas fa-link"></i> Main Link
+                            <a href="${result.url}" class="btn btn-sm btn-outline-primary" target="_blank" title="Visit source page">
+                                <i class="fas fa-external-link-alt"></i> <span>Visit</span>
                             </a>
                         ` : ''}
                         ${result.getLink ? `
-                            <a href="${result.getLink}" class="btn btn-sm btn-success me-2" target="_blank">
-                                <i class="fas fa-download"></i> GET
+                            <a href="${result.getLink}" class="btn btn-sm btn-success" target="_blank" title="Download file">
+                                <i class="fas fa-download"></i> <span>Download</span>
                             </a>
                         ` : ''}
-                        ${result.ipfsLinks ? `
-                            <div class="dropdown d-inline-block me-2">
-                                <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" id="dropdownIpfs${result.number}" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-network-wired"></i> IPFS
+                        ${Object.keys(result.ipfsLinks).length > 0 ? `
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-network-wired"></i> <span>IPFS</span>
                                 </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownIpfs${result.number}">
+                                <ul class="dropdown-menu">
                                     ${result.ipfsLinks.cloudflare ? `
                                         <li><a class="dropdown-item" href="${result.ipfsLinks.cloudflare}" target="_blank">Cloudflare</a></li>
                                     ` : ''}
@@ -292,18 +409,81 @@ if (currentResult) {
                                 </ul>
                             </div>
                         ` : ''}
-                        ${result.torMirror ? `
-                            <a href="${result.torMirror}" class="btn btn-sm btn-outline-dark" target="_blank">
-                                <i class="fas fa-mask"></i> Tor Mirror
-                            </a>
-                        ` : ''}
                     </div>
-                </div>
-            `;
-        }
-        
-        resultsContainer.innerHTML = html;
+                </td>
+            </tr>
+        `;
     }
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+/**
+ * Display results in list view (original view)
+ * 
+ * @param {Array} results - Array of parsed result objects
+ * @param {HTMLElement} container - Container element to display results in
+ */
+function displayListView(results, container) {
+    let html = '';
+    
+    for (const result of results) {
+        html += `
+            <div class="result-item">
+                <div class="result-title">${result.number}. ${result.title}</div>
+                <div class="result-author">by ${result.author || 'Unknown'} ${result.year ? `(${result.year})` : ''}</div>
+                <div class="result-meta">
+                    ${result.publisher ? `<span><i class="fas fa-building"></i> ${result.publisher}</span>` : ''}
+                    ${result.format ? `<span><i class="fas fa-file"></i> ${result.format}</span>` : ''}
+                    ${result.size ? `<span><i class="fas fa-weight"></i> ${result.size}</span>` : ''}
+                    ${result.language ? `<span><i class="fas fa-language"></i> ${result.language}</span>` : ''}
+                </div>
+                <div class="result-links mt-2">
+                    ${result.url ? `
+                        <a href="${result.url}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                            <i class="fas fa-link"></i> Main Link
+                        </a>
+                    ` : ''}
+                    ${result.getLink ? `
+                        <a href="${result.getLink}" class="btn btn-sm btn-success me-2" target="_blank">
+                            <i class="fas fa-download"></i> GET
+                        </a>
+                    ` : ''}
+                    ${Object.keys(result.ipfsLinks).length > 0 ? `
+                        <div class="dropdown d-inline-block me-2">
+                            <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" id="dropdownIpfs${result.number}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-network-wired"></i> IPFS
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownIpfs${result.number}">
+                                ${result.ipfsLinks.cloudflare ? `
+                                    <li><a class="dropdown-item" href="${result.ipfsLinks.cloudflare}" target="_blank">Cloudflare</a></li>
+                                ` : ''}
+                                ${result.ipfsLinks.ipfsio ? `
+                                    <li><a class="dropdown-item" href="${result.ipfsLinks.ipfsio}" target="_blank">IPFS.io</a></li>
+                                ` : ''}
+                                ${result.ipfsLinks.pinata ? `
+                                    <li><a class="dropdown-item" href="${result.ipfsLinks.pinata}" target="_blank">Pinata</a></li>
+                                ` : ''}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    ${result.torMirror ? `
+                        <a href="${result.torMirror}" class="btn btn-sm btn-outline-dark" target="_blank">
+                            <i class="fas fa-mask"></i> Tor Mirror
+                        </a>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
 }
 
 /**

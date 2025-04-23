@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/search-results-table.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -109,7 +110,17 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                         <h3 class="h5 mb-0">Search Results</h3>
-                        <span class="badge bg-primary results-count">0</span>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary results-count me-3">0</span>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary view-toggle" data-view="table" title="Table View">
+                                    <i class="fas fa-table"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary view-toggle active" data-view="list" title="List View">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="alert alert-info loading">
@@ -122,7 +133,6 @@
                     </div>
                 </div>
             </div>
-        </div>
         
         <!-- Filter Section -->
         <div id="filter-section" class="section">

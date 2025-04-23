@@ -358,4 +358,124 @@ textarea.form-control {
         justify-content: center;
     }
 }
+
+/* Styles for search results table */
+
+.results-container table {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.results-container th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 15px;
+    white-space: nowrap;
+}
+
+.results-container td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.results-container tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+/* Truncate long text in cells */
+.results-container td.title-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.results-container td.author-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.results-container td.publisher-cell {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Action buttons */
+.results-container .btn-group {
+    display: flex;
+    gap: 5px;
+}
+
+.results-container .btn {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+
+.results-container .btn i {
+    margin-right: 3px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .results-container table {
+        font-size: 0.8rem;
+    }
+    
+    .results-container th, 
+    .results-container td {
+        padding: 8px 10px;
+    }
+    
+    .results-container .btn {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+    }
+    
+    .results-container .btn i {
+        margin-right: 2px;
+    }
+}
+
+/* For mobile view */
+@media (max-width: 768px) {
+    .results-container .table-responsive {
+        border: none;
+        margin-bottom: 0;
+    }
+    
+    .results-container table {
+        display: block;
+    }
+    
+    .results-container .btn span {
+        display: none;
+    }
+    
+    .results-container .btn i {
+        margin-right: 0;
+    }
+    
+    .results-container td.title-cell {
+        max-width: 150px;
+    }
+    
+    .results-container td.author-cell {
+        max-width: 100px;
+    }
+    
+    .results-container td.publisher-cell {
+        max-width: 80px;
+    }
+}
 }
