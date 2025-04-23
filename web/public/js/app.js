@@ -188,6 +188,8 @@ function setupSearchForm() {
  * @returns {Array} - Array of parsed result objects
  */
 function parseSearchResults(output) {
+    console.log("Raw output to parse:", output); // Debug log
+    
     const lines = output.split('\n');
     let inResults = false;
     let results = [];
@@ -195,15 +197,18 @@ function parseSearchResults(output) {
 
     for (const line of lines) {
         // Check if we're in the results section
-        if (line.includes('Top Results:') || line.includes('Top ') && line.includes(' Results:')) {
+        if (line.match(/Top\s+\d+\s+Results/) || line.includes('Top Results:')) {
             inResults = true;
+            console.log("Found results section marker:", line); // Debug log
             continue;
         }
         
         if (!inResults) continue;
         
         // Check for result entry (starts with number followed by ID)
-        const idMatch = line.match(/^(\d+)\.\s+ID\s+(.*?)$/);
+        // const idMatch = line.match(/^(\d+)\.\s+ID\s+(.+)$/);
+        const idMatch = line.match(/^(\d+)\.\s*ID\s+(\d+)/);
+
         if (idMatch) {
             if (currentResult) {
                 results.push(currentResult);
@@ -219,68 +224,65 @@ function parseSearchResults(output) {
         
         // Match other book details
         if (currentResult) {
-            if (line.trim().startsWith('Author(s)')) {
-                const authorMatch = line.match(/Author\(s\)\s+(.*?)$/);
+            // Strip leading spaces and tabs for more reliable matching
+            const trimmedLine = line.trim();
+            
+            if (trimmedLine.startsWith('Author(s)')) {
+                const authorMatch = trimmedLine.match(/Author\(s\)\s+(.+)$/);
                 if (authorMatch) currentResult.author = authorMatch[1].trim();
             }
-            else if (line.trim().startsWith('Title')) {
-                const titleMatch = line.match(/Title\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Title')) {
+                const titleMatch = trimmedLine.match(/Title\s+(.+)$/);
                 if (titleMatch) currentResult.title = titleMatch[1].trim();
             }
-            else if (line.trim().startsWith('Publisher')) {
-                const publisherMatch = line.match(/Publisher\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Publisher')) {
+                const publisherMatch = trimmedLine.match(/Publisher\s+(.+)$/);
                 if (publisherMatch) currentResult.publisher = publisherMatch[1].trim();
             }
-            else if (line.trim().startsWith('Year')) {
-                const yearMatch = line.match(/Year\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Year')) {
+                const yearMatch = trimmedLine.match(/Year\s+(.+)$/);
                 if (yearMatch) currentResult.year = yearMatch[1].trim();
             }
-            else if (line.trim().startsWith('Language')) {
-                const langMatch = line.match(/Language\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Language(s)')) {
+                const langMatch = trimmedLine.match(/Language\(s\)\s+(.+)$/);
                 if (langMatch) currentResult.language = langMatch[1].trim();
             }
-            else if (line.trim().startsWith('Size')) {
-                const sizeMatch = line.match(/Size\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Size')) {
+                const sizeMatch = trimmedLine.match(/Size\s+(.+)$/);
                 if (sizeMatch) currentResult.size = sizeMatch[1].trim();
             }
-            else if (line.trim().startsWith('Extension')) {
-                const formatMatch = line.match(/Extension\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Extension')) {
+                const formatMatch = trimmedLine.match(/Extension\s+(.+)$/);
                 if (formatMatch) currentResult.format = formatMatch[1].trim();
             }
             // Match main download URL
-            else if (line.trim().startsWith('URL:')) {
-                const urlMatch = line.match(/URL:\s+(.*?)$/);
+            else if (trimmedLine.startsWith('URL:')) {
+                const urlMatch = trimmedLine.match(/URL:\s+(.+)$/);
                 if (urlMatch) currentResult.url = urlMatch[1].trim();
             }
             // Match GET download link
-            else if (line.trim().startsWith('GET Download:')) {
-                const getLinkMatch = line.match(/GET Download:\s+(.*?)$/);
+            else if (trimmedLine.startsWith('GET Download:')) {
+                const getLinkMatch = trimmedLine.match(/GET Download:\s+(.+)$/);
                 if (getLinkMatch) currentResult.getLink = getLinkMatch[1].trim();
             }
             // Match IPFS links
-            else if (line.trim().includes('Cloudflare:')) {
-                const cloudflareMatch = line.match(/Cloudflare:\s+(.*?)$/);
+            else if (trimmedLine.includes('Cloudflare:')) {
+                const cloudflareMatch = trimmedLine.match(/Cloudflare:\s+(.+)$/);
                 if (cloudflareMatch) currentResult.ipfsLinks.cloudflare = cloudflareMatch[1].trim();
             }
-            else if (line.trim().includes('IPFS.io:')) {
-                const ipfsioMatch = line.match(/IPFS\.io:\s+(.*?)$/);
+            else if (trimmedLine.includes('IPFS.io:')) {
+                const ipfsioMatch = trimmedLine.match(/IPFS\.io:\s+(.+)$/);
                 if (ipfsioMatch) currentResult.ipfsLinks.ipfsio = ipfsioMatch[1].trim();
             }
-            else if (line.trim().includes('Pinata:')) {
-                const pinataMatch = line.match(/Pinata:\s+(.*?)$/);
+            else if (trimmedLine.includes('Pinata:')) {
+                const pinataMatch = trimmedLine.match(/Pinata:\s+(.+)$/);
                 if (pinataMatch) currentResult.ipfsLinks.pinata = pinataMatch[1].trim();
             }
             // Match Tor mirror link
-            else if (line.trim().startsWith('Tor Mirror:')) {
-                const torMatch = line.match(/Tor Mirror:\s+(.*?)$/);
+            else if (trimmedLine.startsWith('Tor Mirror:')) {
+                const torMatch = trimmedLine.match(/Tor Mirror:\s+(.+)$/);
                 if (torMatch) currentResult.torMirror = torMatch[1].trim();
             }
-        }
-        
-        // Empty line after result means end of current result
-        if (currentResult && line.trim() === '') {
-            results.push(currentResult);
-            currentResult = null;
         }
     }
 
@@ -289,6 +291,7 @@ function parseSearchResults(output) {
         results.push(currentResult);
     }
     
+    console.log("Parsed results:", results); // Debug log
     return results;
 }
 
@@ -300,38 +303,18 @@ function parseSearchResults(output) {
 function displayResults(results) {
     const resultsContainer = document.querySelector('.results-container');
     
-    if (!resultsContainer) return;
+    if (!resultsContainer) {
+        console.error("Results container not found");
+        return;
+    }
     
-    if (results.length === 0) {
+    console.log(`Displaying ${results.length} results in ${currentView} view`);
+    
+    if (!results || results.length === 0) {
         resultsContainer.innerHTML = `
             <div class="alert alert-info">
                 <i class="fas fa-info-circle me-2"></i>
                 No results found. Try modifying your search query.
-            </div>
-            
-            <!-- Add empty table just to demonstrate the table view -->
-            <div class="table-view ${currentView === 'table' ? '' : 'd-none'}">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Title</th>
-                                <th>Author(s)</th>
-                                <th>Year</th>
-                                <th>Publisher</th>
-                                <th>Format</th>
-                                <th>Size</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="8" class="text-center">No results found</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
         `;
         return;
@@ -342,6 +325,124 @@ function displayResults(results) {
     } else {
         displayListView(results, resultsContainer);
     }
+}
+
+/**
+ * Update the search form submission function to better handle the response
+ */
+function setupSearchForm() {
+    const searchForm = document.getElementById('search-form');
+    
+    if (!searchForm) return;
+    
+    // Add event listeners for view toggle buttons
+    document.querySelectorAll('.view-toggle').forEach(button => {
+        button.addEventListener('click', function() {
+            const view = this.dataset.view;
+            
+            // Update active button
+            document.querySelectorAll('.view-toggle').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Switch view
+            currentView = view;
+            
+            // Redisplay results if we have them
+            if (parsedResults.length > 0) {
+                displayResults(parsedResults);
+            }
+        });
+    });
+    
+    searchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get form values
+        const query = document.getElementById('search-query').value.trim();
+        const limit = document.getElementById('search-limit').value;
+        const fieldsSelect = document.getElementById('search-fields');
+        const fields = Array.from(fieldsSelect.selectedOptions).map(option => option.value);
+        const exportFormat = document.getElementById('export-format').value;
+        const generateSummary = document.getElementById('generate-summary').checked;
+        
+        if (!query) {
+            showError('Please enter a search query');
+            return;
+        }
+        
+        // Show results section
+        const resultsSection = document.getElementById('search-results');
+        resultsSection.classList.remove('d-none');
+        
+        // Show loading state
+        const loadingElement = resultsSection.querySelector('.loading');
+        const resultsContainer = resultsSection.querySelector('.results-container');
+        loadingElement.classList.remove('d-none');
+        resultsContainer.innerHTML = '';
+        
+        try {
+            // Send search request to API
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query,
+                    limit: parseInt(limit),
+                    fields,
+                    exportFormat,
+                    generateSummary
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to perform search');
+            }
+            
+            const data = await response.json();
+            console.log("Search response data:", data);
+            
+            // Update results count
+            const resultsCountElement = resultsSection.querySelector('.results-count');
+            if (resultsCountElement && data.output) {
+                // Extract number of results from output
+                const match = data.output.match(/Found (\d+) results/);
+                if (match && match[1]) {
+                    resultsCountElement.textContent = match[1];
+                } else {
+                    resultsCountElement.textContent = 'N/A';
+                }
+            }
+            
+            // Parse results from output
+            parsedResults = parseSearchResults(data.output || '');
+            console.log("Parsed results:", parsedResults);
+            
+            // Display results based on current view
+            displayResults(parsedResults);
+            
+            // If files were exported, refresh files list
+            if (exportFormat) {
+                setTimeout(loadFiles, 1000);
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            showError(error.message || 'An error occurred during search');
+            resultsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Search failed: ${error.message || 'Unknown error'}
+                </div>
+            `;
+        } finally {
+            // Hide loading state
+            loadingElement.classList.add('d-none');
+        }
+    });
 }
 
 /**
