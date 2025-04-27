@@ -132,13 +132,12 @@ function setupSearchForm() {
                 })
             });
             
-            const data = await response.json();
-            
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to perform search');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to perform search');
             }
             
-            // Add these console.log statements here
+            const data = await response.json();
             console.log("Search response data:", data);
             
             // Update results count
@@ -155,8 +154,6 @@ function setupSearchForm() {
             
             // Parse results from output
             parsedResults = parseSearchResults(data.output || '');
-            
-            // Add this console.log after parsing
             console.log("Parsed results:", parsedResults);
             
             // Display results based on current view
@@ -167,6 +164,7 @@ function setupSearchForm() {
                 setTimeout(loadFiles, 1000);
             }
         } catch (error) {
+            console.error("Search error:", error);
             showError(error.message || 'An error occurred during search');
             resultsContainer.innerHTML = `
                 <div class="alert alert-danger">
@@ -206,7 +204,6 @@ function parseSearchResults(output) {
         if (!inResults) continue;
         
         // Check for result entry (starts with number followed by ID)
-        // const idMatch = line.match(/^(\d+)\.\s+ID\s+(.+)$/);
         const idMatch = line.match(/^(\d+)\.\s*ID\s+(\d+)/);
 
         if (idMatch) {
@@ -216,8 +213,7 @@ function parseSearchResults(output) {
             
             currentResult = {
                 number: idMatch[1],
-                id: idMatch[2].trim(),
-                ipfsLinks: {}
+                id: idMatch[2].trim()
             };
             continue;
         }
@@ -265,24 +261,6 @@ function parseSearchResults(output) {
                 const getLinkMatch = trimmedLine.match(/GET Download:\s+(.+)$/);
                 if (getLinkMatch) currentResult.getLink = getLinkMatch[1].trim();
             }
-            // Match IPFS links
-            else if (trimmedLine.includes('Cloudflare:')) {
-                const cloudflareMatch = trimmedLine.match(/Cloudflare:\s+(.+)$/);
-                if (cloudflareMatch) currentResult.ipfsLinks.cloudflare = cloudflareMatch[1].trim();
-            }
-            else if (trimmedLine.includes('IPFS.io:')) {
-                const ipfsioMatch = trimmedLine.match(/IPFS\.io:\s+(.+)$/);
-                if (ipfsioMatch) currentResult.ipfsLinks.ipfsio = ipfsioMatch[1].trim();
-            }
-            else if (trimmedLine.includes('Pinata:')) {
-                const pinataMatch = trimmedLine.match(/Pinata:\s+(.+)$/);
-                if (pinataMatch) currentResult.ipfsLinks.pinata = pinataMatch[1].trim();
-            }
-            // Match Tor mirror link
-            else if (trimmedLine.startsWith('Tor Mirror:')) {
-                const torMatch = trimmedLine.match(/Tor Mirror:\s+(.+)$/);
-                if (torMatch) currentResult.torMirror = torMatch[1].trim();
-            }
         }
     }
 
@@ -325,124 +303,6 @@ function displayResults(results) {
     } else {
         displayListView(results, resultsContainer);
     }
-}
-
-/**
- * Update the search form submission function to better handle the response
- */
-function setupSearchForm() {
-    const searchForm = document.getElementById('search-form');
-    
-    if (!searchForm) return;
-    
-    // Add event listeners for view toggle buttons
-    document.querySelectorAll('.view-toggle').forEach(button => {
-        button.addEventListener('click', function() {
-            const view = this.dataset.view;
-            
-            // Update active button
-            document.querySelectorAll('.view-toggle').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            this.classList.add('active');
-            
-            // Switch view
-            currentView = view;
-            
-            // Redisplay results if we have them
-            if (parsedResults.length > 0) {
-                displayResults(parsedResults);
-            }
-        });
-    });
-    
-    searchForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Get form values
-        const query = document.getElementById('search-query').value.trim();
-        const limit = document.getElementById('search-limit').value;
-        const fieldsSelect = document.getElementById('search-fields');
-        const fields = Array.from(fieldsSelect.selectedOptions).map(option => option.value);
-        const exportFormat = document.getElementById('export-format').value;
-        const generateSummary = document.getElementById('generate-summary').checked;
-        
-        if (!query) {
-            showError('Please enter a search query');
-            return;
-        }
-        
-        // Show results section
-        const resultsSection = document.getElementById('search-results');
-        resultsSection.classList.remove('d-none');
-        
-        // Show loading state
-        const loadingElement = resultsSection.querySelector('.loading');
-        const resultsContainer = resultsSection.querySelector('.results-container');
-        loadingElement.classList.remove('d-none');
-        resultsContainer.innerHTML = '';
-        
-        try {
-            // Send search request to API
-            const response = await fetch('/api/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query,
-                    limit: parseInt(limit),
-                    fields,
-                    exportFormat,
-                    generateSummary
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to perform search');
-            }
-            
-            const data = await response.json();
-            console.log("Search response data:", data);
-            
-            // Update results count
-            const resultsCountElement = resultsSection.querySelector('.results-count');
-            if (resultsCountElement && data.output) {
-                // Extract number of results from output
-                const match = data.output.match(/Found (\d+) results/);
-                if (match && match[1]) {
-                    resultsCountElement.textContent = match[1];
-                } else {
-                    resultsCountElement.textContent = 'N/A';
-                }
-            }
-            
-            // Parse results from output
-            parsedResults = parseSearchResults(data.output || '');
-            console.log("Parsed results:", parsedResults);
-            
-            // Display results based on current view
-            displayResults(parsedResults);
-            
-            // If files were exported, refresh files list
-            if (exportFormat) {
-                setTimeout(loadFiles, 1000);
-            }
-        } catch (error) {
-            console.error("Search error:", error);
-            showError(error.message || 'An error occurred during search');
-            resultsContainer.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle me-2"></i>
-                    Search failed: ${error.message || 'Unknown error'}
-                </div>
-            `;
-        } finally {
-            // Hide loading state
-            loadingElement.classList.add('d-none');
-        }
-    });
 }
 
 /**
@@ -492,24 +352,6 @@ function displayTableView(results, container) {
                                 <i class="fas fa-download"></i> <span>Download</span>
                             </a>
                         ` : ''}
-                        ${Object.keys(result.ipfsLinks).length > 0 ? `
-                            <div class="dropdown d-inline-block">
-                                <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-network-wired"></i> <span>IPFS</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    ${result.ipfsLinks.cloudflare ? `
-                                        <li><a class="dropdown-item" href="${result.ipfsLinks.cloudflare}" target="_blank">Cloudflare</a></li>
-                                    ` : ''}
-                                    ${result.ipfsLinks.ipfsio ? `
-                                        <li><a class="dropdown-item" href="${result.ipfsLinks.ipfsio}" target="_blank">IPFS.io</a></li>
-                                    ` : ''}
-                                    ${result.ipfsLinks.pinata ? `
-                                        <li><a class="dropdown-item" href="${result.ipfsLinks.pinata}" target="_blank">Pinata</a></li>
-                                    ` : ''}
-                                </ul>
-                            </div>
-                        ` : ''}
                     </div>
                 </td>
             </tr>
@@ -526,7 +368,7 @@ function displayTableView(results, container) {
 }
 
 /**
- * Display results in list view (original view)
+ * Display results in list view
  * 
  * @param {Array} results - Array of parsed result objects
  * @param {HTMLElement} container - Container element to display results in
@@ -537,7 +379,7 @@ function displayListView(results, container) {
     for (const result of results) {
         html += `
             <div class="result-item">
-                <div class="result-title">${result.number}. ${result.title}</div>
+                <div class="result-title">${result.number}. ${result.title || 'Unknown title'}</div>
                 <div class="result-author">by ${result.author || 'Unknown'} ${result.year ? `(${result.year})` : ''}</div>
                 <div class="result-meta">
                     ${result.publisher ? `<span><i class="fas fa-building"></i> ${result.publisher}</span>` : ''}
@@ -554,29 +396,6 @@ function displayListView(results, container) {
                     ${result.getLink ? `
                         <a href="${result.getLink}" class="btn btn-sm btn-success me-2" target="_blank">
                             <i class="fas fa-download"></i> GET
-                        </a>
-                    ` : ''}
-                    ${Object.keys(result.ipfsLinks).length > 0 ? `
-                        <div class="dropdown d-inline-block me-2">
-                            <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" id="dropdownIpfs${result.number}" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-network-wired"></i> IPFS
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownIpfs${result.number}">
-                                ${result.ipfsLinks.cloudflare ? `
-                                    <li><a class="dropdown-item" href="${result.ipfsLinks.cloudflare}" target="_blank">Cloudflare</a></li>
-                                ` : ''}
-                                ${result.ipfsLinks.ipfsio ? `
-                                    <li><a class="dropdown-item" href="${result.ipfsLinks.ipfsio}" target="_blank">IPFS.io</a></li>
-                                ` : ''}
-                                ${result.ipfsLinks.pinata ? `
-                                    <li><a class="dropdown-item" href="${result.ipfsLinks.pinata}" target="_blank">Pinata</a></li>
-                                ` : ''}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    ${result.torMirror ? `
-                        <a href="${result.torMirror}" class="btn btn-sm btn-outline-dark" target="_blank">
-                            <i class="fas fa-mask"></i> Tor Mirror
                         </a>
                     ` : ''}
                 </div>
@@ -618,7 +437,7 @@ function setupFilterForm() {
         try {
             JSON.parse(criteria);
         } catch (e) {
-            showError('Invalid JSON format for filter criteria');
+            showError('Invalid JSON format for filter criteria. Please check your syntax.');
             return;
         }
         
@@ -649,21 +468,22 @@ function setupFilterForm() {
                 body: formData
             });
             
-            const data = await response.json();
-            
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to filter results');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to filter results');
             }
+            
+            const data = await response.json();
             
             // Update results count
             const resultsCountElement = resultsSection.querySelector('.filter-results-count');
             if (resultsCountElement && data.output) {
                 // Extract number of results from output
-                const match = data.output.match(/Filtered Results \((\d+) rows\)/);
+                const match = data.output.match(/Filtered from \d+ to (\d+) rows/);
                 if (match && match[1]) {
                     resultsCountElement.textContent = match[1];
                 } else {
-                    resultsCountElement.textContent = 'N/A';
+                    resultsCountElement.textContent = '0';
                 }
             }
             
@@ -675,6 +495,7 @@ function setupFilterForm() {
                 setTimeout(loadFiles, 1000);
             }
         } catch (error) {
+            console.error("Filter error:", error);
             showError(error.message || 'An error occurred during filtering');
             resultsContainer.innerHTML = `
                 <div class="alert alert-danger">
@@ -699,7 +520,74 @@ function displayFilterResults(output) {
     
     if (!resultsContainer) return;
     
-    // For simplicity, display raw output
+    // Display the output in a more readable format
+    if (output.includes('Filtered Results')) {
+        // Try to parse the output to extract filtered results
+        const lines = output.split('\n');
+        let filteredResults = [];
+        let currentItem = null;
+        
+        for (const line of lines) {
+            // Look for lines with item numbers (1. Title by Author)
+            const itemMatch = line.match(/^(\d+)\.\s+(.+)\s+by\s+(.+)$/);
+            if (itemMatch) {
+                if (currentItem) {
+                    filteredResults.push(currentItem);
+                }
+                currentItem = {
+                    number: itemMatch[1],
+                    title: itemMatch[2].trim(),
+                    author: itemMatch[3].trim()
+                };
+            }
+        }
+        
+        // Add the last item
+        if (currentItem) {
+            filteredResults.push(currentItem);
+        }
+        
+        // Display in a table format
+        if (filteredResults.length > 0) {
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            for (const result of filteredResults) {
+                html += `
+                    <tr>
+                        <td>${result.number}</td>
+                        <td>${result.title}</td>
+                        <td>${result.author}</td>
+                    </tr>
+                `;
+            }
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <p class="text-muted">Filter command output:</p>
+                    <pre class="bg-light p-3 rounded small">${output}</pre>
+                </div>
+            `;
+            
+            resultsContainer.innerHTML = html;
+            return;
+        }
+    }
+    
+    // If we couldn't parse the results, display the raw output
     resultsContainer.innerHTML = `
         <pre class="bg-light p-3 rounded">${output}</pre>
     `;
@@ -763,11 +651,12 @@ function setupAnalyzeForm() {
                 body: formData
             });
             
-            const data = await response.json();
-            
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to analyze results');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to analyze results');
             }
+            
+            const data = await response.json();
             
             // Display results
             displayAnalysisResults(data.output || 'No output from analyze command');
@@ -777,6 +666,7 @@ function setupAnalyzeForm() {
                 setTimeout(loadFiles, 1000);
             }
         } catch (error) {
+            console.error("Analysis error:", error);
             showError(error.message || 'An error occurred during analysis');
             resultsContainer.innerHTML = `
                 <div class="alert alert-danger">
@@ -801,10 +691,84 @@ function displayAnalysisResults(output) {
     
     if (!resultsContainer) return;
     
-    // For simplicity, display raw output
-    resultsContainer.innerHTML = `
-        <pre class="bg-light p-3 rounded">${output}</pre>
-    `;
+    // Parse the output to create a more user-friendly display
+    if (output.includes('Data Analysis:')) {
+        let html = '<div class="row">';
+        
+        // Try to extract summary information
+        const totalRecordsMatch = output.match(/Total records: (\d+)/);
+        const columnsMatch = output.match(/Columns: (\d+)/);
+        
+        if (totalRecordsMatch || columnsMatch) {
+            html += '<div class="col-md-6"><div class="card mb-4"><div class="card-header">Summary</div><div class="card-body">';
+            
+            if (totalRecordsMatch) {
+                html += `<p><strong>Total Records:</strong> <span class="stat-number">${totalRecordsMatch[1]}</span></p>`;
+            }
+            
+            if (columnsMatch) {
+                html += `<p><strong>Number of Columns:</strong> <span class="stat-number">${columnsMatch[1]}</span></p>`;
+            }
+            
+            html += '</div></div></div>';
+        }
+        
+        // Try to extract keyword information
+        if (output.includes('Top Keywords:')) {
+            html += '<div class="col-md-6"><div class="card mb-4"><div class="card-header">Top Keywords</div><div class="card-body">';
+            
+            const keywordSections = output.split('Top Keywords:')[1].split(/From (.+):/g);
+            
+            if (keywordSections.length > 1) {
+                for (let i = 1; i < keywordSections.length; i += 2) {
+                    const fieldName = keywordSections[i].trim();
+                    const keywordLines = keywordSections[i + 1].split('\n').filter(line => line.trim().startsWith('-'));
+                    
+                    if (keywordLines.length > 0) {
+                        html += `<h6>${fieldName}</h6><div class="keyword-list">`;
+                        
+                        for (const line of keywordLines) {
+                            const keywordMatch = line.match(/\s+\-\s+(.+): (\d+)/);
+                            if (keywordMatch) {
+                                const keyword = keywordMatch[1];
+                                const count = keywordMatch[2];
+                                html += `<div class="keyword-tag">${keyword} <span class="keyword-count">${count}</span></div>`;
+                            }
+                        }
+                        
+                        html += '</div>';
+                    }
+                }
+            }
+            
+            html += '</div></div></div>';
+        }
+        
+        html += '</div>';
+        
+        // Add the full output in a collapsible section
+        html += `
+            <div class="card">
+                <div class="card-header">
+                    <a data-bs-toggle="collapse" href="#fullOutput" role="button" aria-expanded="false" aria-controls="fullOutput">
+                        Full Analysis Output <i class="fas fa-chevron-down ms-2"></i>
+                    </a>
+                </div>
+                <div class="collapse" id="fullOutput">
+                    <div class="card-body">
+                        <pre class="bg-light p-3 rounded small">${output}</pre>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        resultsContainer.innerHTML = html;
+    } else {
+        // If we couldn't parse the output in a structured way, just display it as-is
+        resultsContainer.innerHTML = `
+            <pre class="bg-light p-3 rounded">${output}</pre>
+        `;
+    }
 }
 
 /**
@@ -825,11 +789,12 @@ async function loadFiles() {
     try {
         // Fetch files from API
         const response = await fetch('/api/files');
-        const data = await response.json();
         
         if (!response.ok) {
-            throw new Error(data.error || 'Failed to load files');
+            throw new Error('Failed to fetch files');
         }
+        
+        const data = await response.json();
         
         if (!data.files || data.files.length === 0) {
             // No files found
@@ -889,7 +854,7 @@ async function loadFiles() {
                         <a href="${file.path}" class="btn btn-sm btn-outline-primary download-file">
                             <i class="fas fa-download"></i> Download
                         </a>
-                        <button type="button" class="btn btn-sm btn-outline-danger delete-file">
+                        <button type="button" class="btn btn-sm btn-outline-danger delete-file" data-filename="${file.name}">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
@@ -902,8 +867,7 @@ async function loadFiles() {
         // Add event listeners for delete buttons
         document.querySelectorAll('.delete-file').forEach(button => {
             button.addEventListener('click', function() {
-                const fileItem = this.closest('.file-item');
-                const filename = fileItem.dataset.filename;
+                const filename = this.getAttribute('data-filename');
                 
                 if (filename) {
                     showDeleteConfirmation(filename);
@@ -933,7 +897,10 @@ function showDeleteConfirmation(filename) {
     const filenameElement = document.getElementById('delete-filename');
     const confirmButton = document.getElementById('confirm-delete');
     
-    if (!modal || !filenameElement || !confirmButton) return;
+    if (!modal || !filenameElement || !confirmButton) {
+        console.error('Delete confirmation modal elements not found');
+        return;
+    }
     
     // Set filename in modal
     filenameElement.textContent = filename;
@@ -942,14 +909,13 @@ function showDeleteConfirmation(filename) {
     confirmButton.onclick = async function() {
         try {
             // Send delete request to API
-            const response = await fetch(`/api/files/${filename}`, {
+            const response = await fetch(`/api/files/${encodeURIComponent(filename)}`, {
                 method: 'DELETE'
             });
             
-            const data = await response.json();
-            
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to delete file');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete file');
             }
             
             // Close modal
@@ -958,7 +924,34 @@ function showDeleteConfirmation(filename) {
             
             // Refresh files list
             loadFiles();
+            
+            // Show success notification
+            const alertHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    File "${filename}" was successfully deleted.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Insert notification at the top of the files section
+            const filesSection = document.getElementById('files-section');
+            if (filesSection) {
+                const alertContainer = document.createElement('div');
+                alertContainer.innerHTML = alertHTML;
+                filesSection.insertBefore(alertContainer, filesSection.firstChild);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    const alert = filesSection.querySelector('.alert');
+                    if (alert) {
+                        const bsAlert = bootstrap.Alert.getInstance(alert);
+                        if (bsAlert) bsAlert.close();
+                    }
+                }, 5000);
+            }
         } catch (error) {
+            console.error('Error deleting file:', error);
             showError(error.message || 'An error occurred while deleting the file');
         }
     };
@@ -977,7 +970,12 @@ function showError(message) {
     const modal = document.getElementById('error-modal');
     const messageElement = document.getElementById('error-message');
     
-    if (!modal || !messageElement) return;
+    if (!modal || !messageElement) {
+        console.error('Error modal elements not found');
+        // Fallback to alert if modal elements not found
+        alert(`Error: ${message}`);
+        return;
+    }
     
     messageElement.textContent = message;
     
@@ -989,8 +987,10 @@ function showError(message) {
  * Initialize Bootstrap tooltips
  */
 function initTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    if (tooltipTriggerList.length > 0) {
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
 }
