@@ -6,6 +6,8 @@ This module provides functionality to connect to and query the LibGen API.
 
 import logging
 import requests
+
+from bs4 import BeautifulSoup
 from typing import Dict, List, Any, Optional, Union
 from urllib.parse import urljoin
 
@@ -55,6 +57,7 @@ class LibGenAPI:
         Raises:
             ConnectionError: If no working mirrors found
         """
+
         for mirror in self.DEFAULT_MIRRORS:
             try:
                 response = self.session.get(mirror, timeout=5)
@@ -67,6 +70,7 @@ class LibGenAPI:
     
     def search(self, query: str, fields: Optional[List[str]] = None, 
                limit: int = 25) -> List[Dict[str, Any]]:
+        print("searchField",query,fields)
         """
         Search for books in LibGen.
         
@@ -82,12 +86,13 @@ class LibGenAPI:
         
         if fields:
             params["column"] = ",".join(fields)
-        
         url = urljoin(self.mirror, self.SEARCH_ENDPOINT)
+
         try:
             response = self.session.get(url, params=params, timeout=10)
             response.raise_for_status()
-            
+            print("here2", response)
+
             # LibGen may return HTML or JSON depending on the endpoint
             content_type = response.headers.get("Content-Type", "")
             if "application/json" in content_type:
@@ -116,7 +121,7 @@ class LibGenAPI:
         try:
             response = self.session.get(url, params=params, timeout=10)
             response.raise_for_status()
-            
+            print("here3",response)
             data = response.json()
             if data and isinstance(data, list) and len(data) > 0:
                 return data[0]
@@ -158,7 +163,6 @@ class LibGenAPI:
                 
             # Skip the header row
             rows = table.find_all('tr')[1:]
-            
             for row in rows:
                 cells = row.find_all('td')
                 
@@ -199,7 +203,7 @@ class LibGenAPI:
                         download_links['tor_mirror'] = f"http://libgenfrialc7tguyjywa36vtrdcplxydrxnm3f6zjbwxprqsycqad.onion/main/{book['id']}"
                 
                 book['download_links'] = download_links
-                
+                print("download_link2",download_links)
                 # Extract filesize in bytes
                 size_text = book['size']
                 filesize = 0
@@ -223,10 +227,16 @@ class LibGenAPI:
                             logger.warning(f"Could not parse size: {size_text}")
                 
                 book['filesize'] = int(filesize)
-                
                 results.append(book)
             
             logger.info(f"Parsed {len(results)} results from HTML")
+            target_url = results[0]['link']
+            response = requests.get(target_url, timeout=10)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text,'html.parser')
+            downloadLink = soup.select_one('h2 + div > a')
+            print(downloadLink)            
             return results
             
         except Exception as e:

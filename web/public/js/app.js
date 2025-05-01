@@ -207,6 +207,7 @@ function parseSearchResults(output) {
         
         // Check for result entry (starts with number followed by ID)
         // const idMatch = line.match(/^(\d+)\.\s+ID\s+(.+)$/);
+        // const idMatch = line.match(/^(\d+)\.\s*ID\s+(\d+)/);
         const idMatch = line.match(/^(\d+)\.\s*ID\s+(\d+)/);
 
         if (idMatch) {
@@ -405,7 +406,7 @@ function setupSearchForm() {
             
             const data = await response.json();
             console.log("Search response data:", data);
-            
+
             // Update results count
             const resultsCountElement = resultsSection.querySelector('.results-count');
             if (resultsCountElement && data.output) {
@@ -491,7 +492,7 @@ function displayTableView(results, container) {
                             <a href="${result.getLink}" class="btn btn-sm btn-success" target="_blank" title="Download file">
                                 <i class="fas fa-download"></i> <span>Download</span>
                             </a>
-                        ` : ''}
+                        ` : ''}                       
                         ${Object.keys(result.ipfsLinks).length > 0 ? `
                             <div class="dropdown d-inline-block">
                                 <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -555,7 +556,7 @@ function displayListView(results, container) {
                         <a href="${result.getLink}" class="btn btn-sm btn-success me-2" target="_blank">
                             <i class="fas fa-download"></i> GET
                         </a>
-                    ` : ''}
+                    ` : ''}                   
                     ${Object.keys(result.ipfsLinks).length > 0 ? `
                         <div class="dropdown d-inline-block me-2">
                             <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" id="dropdownIpfs${result.number}" data-bs-toggle="dropdown" aria-expanded="false">
