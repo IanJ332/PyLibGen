@@ -158,7 +158,8 @@ class LibGenAPI:
                 
             # Skip the header row
             rows = table.find_all('tr')[1:]
-            
+            print("rows",rows)
+
             for row in rows:
                 cells = row.find_all('td')
                 
@@ -198,8 +199,17 @@ class LibGenAPI:
                         download_links['ipfs_pinata'] = f"https://gateway.pinata.cloud/ipfs/{book['id']}"
                         download_links['tor_mirror'] = f"http://libgenfrialc7tguyjywa36vtrdcplxydrxnm3f6zjbwxprqsycqad.onion/main/{book['id']}"
                 
+                target_url = book['link']
+                print(download_links)
+
+                # response2 = requests.get(target_url, timeout=10)
+                # response2.raise_for_status()
+                # soup2 = BeautifulSoup(response2.text,'html.parser')
+                # downloadLink = str(soup2.select_one('#download > h2:nth-child(1) > a'))
+                # print("downloadLink:",downloadLink[9:-8])
+                # download_links['get'] = downloadLink[9:-8]
                 book['download_links'] = download_links
-                
+
                 # Extract filesize in bytes
                 size_text = book['size']
                 filesize = 0
@@ -223,10 +233,12 @@ class LibGenAPI:
                             logger.warning(f"Could not parse size: {size_text}")
                 
                 book['filesize'] = int(filesize)
-                
+
                 results.append(book)
             
             logger.info(f"Parsed {len(results)} results from HTML")
+
+
             return results
             
         except Exception as e:
