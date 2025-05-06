@@ -94,7 +94,7 @@ class LibGenAPI:
                 return response.json()
             else:
                 # If HTML, we need to parse the results
-                return self._parse_html_results(response.text)
+                return self._parse_html_results(response.text, limit)
                 
         except requests.RequestException as e:
             logger.error(f"Error searching LibGen: {e}")
@@ -129,7 +129,7 @@ class LibGenAPI:
     # not sure why but it keeps telling me Size: 0.00 MB
     # Update at 4.17, Jisheng, Task: just did fetch URL.
     # see if this version works
-    def _parse_html_results(self, html_content: str) -> List[Dict[str, Any]]:
+    def _parse_html_results(self, html_content: str, limit : int) -> List[Dict[str, Any]]:
         """
         Parse HTML search results into structured data.
         
@@ -139,6 +139,7 @@ class LibGenAPI:
         Returns:
             List of book records as dictionaries
         """
+        cnt = 0
         try:
             from bs4 import BeautifulSoup
             
@@ -184,6 +185,7 @@ class LibGenAPI:
                 
                 # Extract the main link if available
                 if len(cells) > 9:
+                    cnt += 1
                     links = cells[9].find_all('a')
                     if links:
                         book['link'] = links[0].get('href', '')
@@ -199,12 +201,13 @@ class LibGenAPI:
                         download_links['tor_mirror'] = f"http://libgenfrialc7tguyjywa36vtrdcplxydrxnm3f6zjbwxprqsycqad.onion/main/{book['id']}"
                 
                 target_url = book['link']
-
                 response2 = requests.get(target_url, timeout=10)
                 response2.raise_for_status()
                 soup2 = BeautifulSoup(response2.text,'html.parser')
                 downloadLink = str(soup2.select_one('#download > h2:nth-child(1) > a'))
                 download_links['get'] = downloadLink[9:-8]
+                if (cnt > limit):
+                    break
 
 
                 book['download_links'] = download_links
