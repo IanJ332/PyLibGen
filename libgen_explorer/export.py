@@ -35,67 +35,76 @@ class FileExporter:
         logger.info(f"File exporter initialized with output directory: {self.output_dir}")
         
     def export_df(self, df: pd.DataFrame, filename: str, 
-                 format: str = 'csv', **kwargs) -> str:
-        """
-        Export a DataFrame to a file.
-        
-        Args:
-            df: DataFrame to export
-            filename: Base filename (without extension)
-            format: Export format (csv, json, excel, html, yaml, txt)
-            **kwargs: Additional format-specific arguments
+                    format: str = 'csv', **kwargs) -> str:
+            """
+            Export a DataFrame to a file.
+
+            Args:
+                df: DataFrame to export
+                filename: Base filename (without extension)
+                format: Export format (csv, json, excel, html, yaml, txt)
+                **kwargs: Additional format-specific arguments
+
+            Returns:
+                Path to the saved file
+
+            Raises:
+                ValueError: If format is not supported
+            """
+            if df.empty:
+                logger.warning("Attempting to export empty DataFrame")
+
+            format = format.lower()
+            if format not in self.SUPPORTED_FORMATS:
+                raise ValueError(f"Unsupported export format: {format}. "
+                                f"Supported formats are: {', '.join(self.SUPPORTED_FORMATS)}")
+
+            # Create export_output directory if it doesn't exist
+            export_dir = os.path.join(self.output_dir, "export_output")
+            if not os.path.exists(export_dir):
+                os.makedirs(export_dir, exist_ok=True)
+
+            # Generate file path with current date and time
+            from datetime import datetime
+            current_date = datetime.now().strftime("%m-%d-%Y")
+            current_time = datetime.now().strftime("%H-%M-%S")
+
+            # Sanitize filename
+            clean_filename = self._sanitize_filename(filename)
+
+            # Generate formatted filename with the requested pattern: (Name)-[Date]-{Time}.format
+            formatted_filename = f"({clean_filename})-[{current_date}]-{{{current_time}}}.{format}"
+            file_path = os.path.join(export_dir, formatted_filename)
             
-        Returns:
-            Path to the saved file
-            
-        Raises:
-            ValueError: If format is not supported
-        """
-        if df.empty:
-            logger.warning("Attempting to export empty DataFrame")
-            
-        format = format.lower()
-        if format not in self.SUPPORTED_FORMATS:
-            raise ValueError(f"Unsupported export format: {format}. "
-                            f"Supported formats are: {', '.join(self.SUPPORTED_FORMATS)}")
-                            
-        # Generate file path
-        if not filename.endswith(f'.{format}'):
-            filename = f"{filename}.{format}"
-            
-        file_path = os.path.join(self.output_dir, filename)
-        
-        try:
-            if format == 'csv':
-                df.to_csv(file_path, index=False, **kwargs)
-                
-            elif format == 'json':
-                # Use orient='records' by default for more readable JSON
-                orient = kwargs.pop('orient', 'records')
-                df.to_json(file_path, orient=orient, **kwargs)
-                
-            elif format == 'excel':
-                df.to_excel(file_path, index=False, **kwargs)
-                
-            elif format == 'html':
-                df.to_html(file_path, index=False, **kwargs)
-                
-            elif format == 'yaml':
-                import yaml
-                with open(file_path, 'w') as f:
-                    yaml.dump(df.to_dict(orient='records'), f, **kwargs)
-                    
-            elif format == 'txt':
-                # Simple text format with tab separation by default
-                sep = kwargs.pop('sep', '\t')
-                df.to_csv(file_path, index=False, sep=sep, **kwargs)
-                
-            logger.info(f"Exported DataFrame with {len(df)} rows to {file_path}")
-            return file_path
-            
-        except Exception as e:
-            logger.error(f"Error exporting DataFrame to {format}: {e}")
-            raise
+            try:
+                if format == 'csv':
+                    df.to_csv(file_path, index=False, **kwargs)
+
+                elif format == 'json':
+                    orient = kwargs.pop('orient', 'records')
+                    df.to_json(file_path, orient=orient, **kwargs)
+
+                elif format == 'excel':
+                    df.to_excel(file_path, index=False, **kwargs)
+
+                elif format == 'html':
+                    df.to_html(file_path, index=False, **kwargs)
+
+                elif format == 'yaml':
+                    import yaml
+                    with open(file_path, 'w') as f:
+                        yaml.dump(df.to_dict(orient='records'), f, **kwargs)
+
+                elif format == 'txt':
+                    sep = kwargs.pop('sep', '\t')
+                    df.to_csv(file_path, index=False, sep=sep, **kwargs)
+
+                logger.info(f"Exported DataFrame with {len(df)} rows to {file_path}")
+                return file_path
+
+            except Exception as e:
+                logger.error(f"Error exporting DataFrame to {format}: {e}")
+                raise
             
     def export_json(self, data: Union[Dict, List], filename: str, **kwargs) -> str:
         """
@@ -109,10 +118,24 @@ class FileExporter:
         Returns:
             Path to the saved file
         """
-        if not filename.endswith('.json'):
-            filename = f"{filename}.json"
+        # Create export_output directory if it doesn't exist
+        export_dir = os.path.join(self.output_dir, "export_output")
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
             
-        file_path = os.path.join(self.output_dir, filename)
+        # Generate file path with current date
+        from datetime import datetime
+        current_date = datetime.now().strftime("%m-%d-%Y")
+        
+        # Clean up filename to use as part of the exported filename
+        clean_filename = self._sanitize_filename(filename)
+        
+        # Generate formatted filename: Book_Name-Date.json
+        formatted_filename = f"{clean_filename}-{current_date}.json"
+        if not formatted_filename.endswith('.json'):
+            formatted_filename = f"{formatted_filename}.json"
+            
+        file_path = os.path.join(export_dir, formatted_filename)
         
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
@@ -128,9 +151,9 @@ class FileExporter:
             raise
             
     def export_summary(self, search_query: str, results_df: pd.DataFrame, 
-                      ratings: Optional[List[Dict[str, Any]]] = None,
-                      keywords: Optional[Dict[str, Any]] = None,
-                      format: str = 'txt') -> str:
+                    ratings: Optional[List[Dict[str, Any]]] = None,
+                    keywords: Optional[Dict[str, Any]] = None,
+                    format: str = 'txt') -> str:
         """
         Generate and export a summary report of search results.
         
@@ -152,9 +175,21 @@ class FileExporter:
             logger.warning(f"Unsupported summary format: {format}, using txt instead")
             format = 'txt'
             
-        # Generate a sanitized filename from the query
-        filename = f"libgen_summary_{self._sanitize_filename(search_query)}.{format}"
-        file_path = os.path.join(self.output_dir, filename)
+        # Create export_output directory if it doesn't exist
+        export_dir = os.path.join(self.output_dir, "export_output")
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+            
+        # Generate file path with current date
+        from datetime import datetime
+        current_date = datetime.now().strftime("%m-%d-%Y")
+        
+        # Clean up filename to use as part of the exported filename
+        query_name = self._sanitize_filename(search_query)
+        
+        # Generate formatted filename: Book_Name-Date.format
+        filename = f"{query_name}-{current_date}.{format}"
+        file_path = os.path.join(export_dir, filename)
         
         try:
             if format == 'txt':
@@ -172,7 +207,45 @@ class FileExporter:
         except Exception as e:
             logger.error(f"Error exporting summary: {e}")
             raise
+
+    def export_log(self, search_query: str, log_content: str) -> str:
+        """
+        Export log content to a text file.
+        
+        Args:
+            search_query: Original search query used to name the file
+            log_content: Log content to export
             
+        Returns:
+            Path to the saved file
+        """
+        # Create export_output directory if it doesn't exist
+        export_dir = os.path.join(self.output_dir, "export_output")
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+            
+        # Generate file path with current date
+        from datetime import datetime
+        current_date = datetime.now().strftime("%m-%d-%Y")
+        
+        # Clean up filename to use as part of the exported filename
+        clean_filename = self._sanitize_filename(search_query)
+        
+        # Generate formatted filename: Book_Name-Date.txt
+        formatted_filename = f"{clean_filename}-{current_date}.txt"
+        file_path = os.path.join(export_dir, formatted_filename)
+        
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(log_content)
+                
+            logger.info(f"Exported log to {file_path}")
+            return file_path
+            
+        except Exception as e:
+            logger.error(f"Error exporting log: {e}")
+            raise
+
     def _sanitize_filename(self, filename: str) -> str:
         """
         Sanitize a string to be used as a filename.

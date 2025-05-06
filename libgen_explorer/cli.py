@@ -129,19 +129,26 @@ def search_command(args: argparse.Namespace) -> None:
         top_results = rater.get_top_results(df, n=display_limit)
         
         # Log search results to a timestamped file
-        log_file = log_search_results(args.query, args.limit, df, top_results)
-        logger.info(f"Search log created at: {log_file}")
+        log_file_content = format_search_results(args.query, args.limit, df, top_results)
         
-        # Export results if requested
+        # Export results based on the requested format
         if args.export:
-            output_file = args.output if args.output and not os.path.isdir(args.output) else None
+            # Generate filename from query
+            sanitized_query = args.query.replace(' ', '_')[:30]
+            output_file = f"{sanitized_query}"
             
-            if not output_file:
+            if args.output and not os.path.isdir(args.output):
+                # Extract just the filename part if a full path is provided
+                output_file = os.path.basename(args.output)
+            else:
                 # Generate filename from query
                 sanitized_query = args.query.replace(' ', '_')[:30]
-                output_file = f"libgen_search_{sanitized_query}"
-                
+                output_file = f"{sanitized_query}"
+            # Actually export the data with the correct format
             exporter.export_df(df, output_file, format=args.export)
+        else:
+            # If no export format specified, just export the log
+            exporter.export_log(args.query, log_file_content)
             
         # Generate summary if requested
         if args.summary:
@@ -205,7 +212,87 @@ def search_command(args: argparse.Namespace) -> None:
             
     except Exception as e:
         logger.error(f"Error during search command: {e}")
+
+def format_search_results(query: str, limit: int, results_df: pd.DataFrame, top_results: pd.DataFrame) -> str:
+    """
+    Format search results as a text string for logging or display.
+    
+    Args:
+        query: The search query
+        limit: The limit parameter used
+        results_df: Full results DataFrame
+        top_results: DataFrame with top N results
         
+    Returns:
+        Formatted search results as a string
+    """
+    import datetime
+    
+    # Format the log content
+    lines = []
+    
+    # Header information
+    current_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    lines.append(f"Time: {current_time}")
+    lines.append(f"Query Condition: {query}")
+    lines.append(f"Limit the number of results: {limit}")
+    lines.append(f"Total results found: {len(results_df)}")
+    lines.append("")
+    
+    # Results header
+    lines.append("Query Results.")
+    lines.append("-------------")
+    
+    # Write top results in the structured format
+    for i, (_, row) in enumerate(top_results.iterrows(), 1):
+        lines.append(f"{i}. ID\t{row.get('id', 'N/A')}")
+        lines.append(f"    Author(s)\t{row.get('author', 'N/A')}")
+
+        # Title might be split over multiple lines if it's long
+        title = row.get('title', 'N/A')
+        lines.append(f"    Title\t{title}")
+
+        lines.append(f"    Publisher\t{row.get('publisher', 'N/A')}")
+        lines.append(f"    Year\t{row.get('year', 'N/A')}")
+        lines.append(f"    Language(s)\t{row.get('language', 'N/A')}")
+
+        # Format file size
+        if 'filesize' in row:
+            size_mb = row['filesize'] / (1024 * 1024) if row['filesize'] else 0
+            lines.append(f"    Size\t{size_mb:.2f} MB")
+        else:
+            lines.append(f"    Size\tN/A")
+
+        lines.append(f"    Extension\t{row.get('extension', 'N/A')}")
+
+        # Write download link
+        if 'link' in row:
+            lines.append(f"    URL:\t{row.get('link', 'N/A')}")
+
+        # Write additional download links if available
+        if 'download_links' in row and isinstance(row['download_links'], dict):
+            dl_links = row['download_links']
+
+            if 'get' in dl_links:
+                lines.append(f"    GET Download:\t{dl_links['get']}")
+
+            lines.append(f"    IPFS Download Options:")
+            if 'ipfs_cloudflare' in dl_links:
+                lines.append(f"      - Cloudflare:\t{dl_links['ipfs_cloudflare']}")
+            if 'ipfs_io' in dl_links:
+                lines.append(f"      - IPFS.io:\t{dl_links['ipfs_io']}")
+            if 'ipfs_pinata' in dl_links:
+                lines.append(f"      - Pinata:\t{dl_links['ipfs_pinata']}")
+
+            if 'tor_mirror' in dl_links:
+                lines.append(f"    Tor Mirror:\t{dl_links['tor_mirror']}")
+
+        # Add an empty line between entries
+        if i < len(top_results):
+            lines.append("")
+            
+    return "\n".join(lines)
+
 def filter_command(args: argparse.Namespace) -> None:
     """
     Handle the filter command.
