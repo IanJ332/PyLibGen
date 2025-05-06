@@ -8,6 +8,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { spawn } = require('child_process');
+const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 const Gun = require('gun');
@@ -87,6 +88,41 @@ app.post('/api/search', async (req, res) => {
     console.error('Error processing search request:', error);
     res.status(500).json({ error: 'An error occurred while processing your request' });
   }
+});
+
+
+// Proxy download route
+app.get('/proxy-download', async (req, res) => {
+    const { url } = req.query;
+
+    if (!url || !url.startsWith('https://download.books.ms/')) {
+        return res.status(400).send('Invalid or missing download URL.');
+    }
+
+    try {
+        const fileResponse = await axios({
+            method: 'GET',
+            url,
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0', // mimic browser if needed
+                // Add other headers here if required
+            },
+        });
+
+        const contentDisposition = fileResponse.headers['content-disposition'];
+        const fileName = contentDisposition
+            ? contentDisposition.split('filename=')[1]
+            : 'downloaded-file.pdf';
+
+        res.setHeader('Content-Type', fileResponse.headers['content-type']);
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        fileResponse.data.pipe(res);
+    } catch (error) {
+        console.error('Proxy error:', error.message);
+        res.status(500).send('Failed to download file.');
+    }
 });
 
 // Filter results

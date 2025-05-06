@@ -157,8 +157,8 @@ class LibGenAPI:
                 return []
                 
             # Skip the header row
-            rows = table.find_all('tr')[1:]
-            print("rows",rows)
+            # rows = table.find_all('tr')[1:]
+            # print("rows",rows)
 
             for row in rows:
                 cells = row.find_all('td')
@@ -166,7 +166,7 @@ class LibGenAPI:
                 # Skip rows with insufficient cells
                 if len(cells) < 8:
                     continue
-                    
+                     
                 # Extract book data - adjusted for current libgen.is structure
                 book = {
                     'id': cells[0].text.strip() if len(cells) > 0 else '',
@@ -200,14 +200,16 @@ class LibGenAPI:
                         download_links['tor_mirror'] = f"http://libgenfrialc7tguyjywa36vtrdcplxydrxnm3f6zjbwxprqsycqad.onion/main/{book['id']}"
                 
                 target_url = book['link']
-                print(download_links)
 
-                # response2 = requests.get(target_url, timeout=10)
-                # response2.raise_for_status()
-                # soup2 = BeautifulSoup(response2.text,'html.parser')
-                # downloadLink = str(soup2.select_one('#download > h2:nth-child(1) > a'))
-                # print("downloadLink:",downloadLink[9:-8])
-                # download_links['get'] = downloadLink[9:-8]
+                response2 = requests.get(target_url, timeout=10)
+                response2.raise_for_status()
+                soup2 = BeautifulSoup(response2.text,'html.parser')
+                downloadLink = str(soup2.select_one('#download > h2:nth-child(1) > a'))
+                print("downloadLink:",downloadLink[9:-8])
+                download_links['get'] = downloadLink[9:-8]
+
+
+                print(download_links)
                 book['download_links'] = download_links
 
                 # Extract filesize in bytes

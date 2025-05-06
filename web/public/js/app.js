@@ -11,18 +11,18 @@ let currentView = 'list';
 // Store parsed results for easy switching between views
 let parsedResults = [];
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Navigation
     setupNavigation();
-    
+
     // Form Handlers
     setupSearchForm();
     setupFilterForm();
     setupAnalyzeForm();
-    
+
     // Files Section
     loadFiles();
-    
+
     // Initialize tooltips
     initTooltips();
 });
@@ -32,27 +32,27 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-    
+
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             e.preventDefault();
-            
+
             // Get target section from href
             const targetId = this.getAttribute('href').substring(1);
             const targetSection = document.getElementById(`${targetId}-section`);
-            
+
             if (!targetSection) return;
-            
+
             // Update active nav link
             navLinks.forEach(link => link.classList.remove('active'));
             this.classList.add('active');
-            
+
             // Update active section
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
             targetSection.classList.add('active');
-            
+
             // Special handling for files section
             if (targetId === 'files') {
                 loadFiles();
@@ -66,33 +66,33 @@ function setupNavigation() {
  */
 function setupSearchForm() {
     const searchForm = document.getElementById('search-form');
-    
+
     if (!searchForm) return;
-    
+
     // Add event listeners for view toggle buttons
     document.querySelectorAll('.view-toggle').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const view = this.dataset.view;
-            
+
             // Update active button
             document.querySelectorAll('.view-toggle').forEach(btn => {
                 btn.classList.remove('active');
             });
             this.classList.add('active');
-            
+
             // Switch view
             currentView = view;
-            
+
             // Redisplay results if we have them
             if (parsedResults.length > 0) {
                 displayResults(parsedResults);
             }
         });
     });
-    
-    searchForm.addEventListener('submit', async function(e) {
+
+    searchForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         // Get form values
         const query = document.getElementById('search-query').value.trim();
         const limit = document.getElementById('search-limit').value;
@@ -100,22 +100,22 @@ function setupSearchForm() {
         const fields = Array.from(fieldsSelect.selectedOptions).map(option => option.value);
         const exportFormat = document.getElementById('export-format').value;
         const generateSummary = document.getElementById('generate-summary').checked;
-        
+
         if (!query) {
             showError('Please enter a search query');
             return;
         }
-        
+
         // Show results section
         const resultsSection = document.getElementById('search-results');
         resultsSection.classList.remove('d-none');
-        
+
         // Show loading state
         const loadingElement = resultsSection.querySelector('.loading');
         const resultsContainer = resultsSection.querySelector('.results-container');
         loadingElement.classList.remove('d-none');
         resultsContainer.innerHTML = '';
-        
+
         try {
             // Send search request to API
             const response = await fetch('/api/search', {
@@ -131,15 +131,15 @@ function setupSearchForm() {
                     generateSummary
                 })
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to perform search');
             }
-            
+
             const data = await response.json();
             console.log("Search response data:", data);
-            
+
             // Update results count
             const resultsCountElement = resultsSection.querySelector('.results-count');
             if (resultsCountElement && data.output) {
@@ -151,14 +151,14 @@ function setupSearchForm() {
                     resultsCountElement.textContent = 'N/A';
                 }
             }
-            
+
             // Parse results from output
             parsedResults = parseSearchResults(data.output || '');
             console.log("Parsed results:", parsedResults);
-            
+
             // Display results based on current view
             displayResults(parsedResults);
-            
+
             // If files were exported, refresh files list
             if (exportFormat) {
                 setTimeout(loadFiles, 1000);
@@ -187,7 +187,7 @@ function setupSearchForm() {
  */
 function parseSearchResults(output) {
     console.log("Raw output to parse:", output); // Debug log
-    
+
     const lines = output.split('\n');
     let inResults = false;
     let results = [];
@@ -200,9 +200,9 @@ function parseSearchResults(output) {
             console.log("Found results section marker:", line); // Debug log
             continue;
         }
-        
+
         if (!inResults) continue;
-        
+
         // Check for result entry (starts with number followed by ID)
         const idMatch = line.match(/^(\d+)\.\s*ID\s+(\d+)/);
 
@@ -210,19 +210,19 @@ function parseSearchResults(output) {
             if (currentResult) {
                 results.push(currentResult);
             }
-            
+
             currentResult = {
                 number: idMatch[1],
                 id: idMatch[2].trim()
             };
             continue;
         }
-        
+
         // Match other book details
         if (currentResult) {
             // Strip leading spaces and tabs for more reliable matching
             const trimmedLine = line.trim();
-            
+
             if (trimmedLine.startsWith('Author(s)')) {
                 const authorMatch = trimmedLine.match(/Author\(s\)\s+(.+)$/);
                 if (authorMatch) currentResult.author = authorMatch[1].trim();
@@ -268,7 +268,7 @@ function parseSearchResults(output) {
     if (currentResult) {
         results.push(currentResult);
     }
-    
+
     console.log("Parsed results:", results); // Debug log
     return results;
 }
@@ -280,14 +280,14 @@ function parseSearchResults(output) {
  */
 function displayResults(results) {
     const resultsContainer = document.querySelector('.results-container');
-    
+
     if (!resultsContainer) {
         console.error("Results container not found");
         return;
     }
-    
+
     console.log(`Displaying ${results.length} results in ${currentView} view`);
-    
+
     if (!results || results.length === 0) {
         resultsContainer.innerHTML = `
             <div class="alert alert-info">
@@ -297,7 +297,7 @@ function displayResults(results) {
         `;
         return;
     }
-    
+
     if (currentView === 'table') {
         displayTableView(results, resultsContainer);
     } else {
@@ -329,7 +329,7 @@ function displayTableView(results, container) {
                 </thead>
                 <tbody>
     `;
-    
+
     for (const result of results) {
         html += `
             <tr>
@@ -348,8 +348,8 @@ function displayTableView(results, container) {
                             </a>
                         ` : ''}
                         ${result.getLink ? `
-                            <a href="${result.getLink}" class="btn btn-sm btn-success" target="_blank" title="Download file">
-                                <i class="fas fa-download"></i> <span>Download</span>
+                            <a href=${result.getLink} class="btn btn-sm btn-success" target="_blank" title="Download file">
+                                 <span>Download</span>
                             </a>
                         ` : ''}
                     </div>
@@ -357,13 +357,13 @@ function displayTableView(results, container) {
             </tr>
         `;
     }
-    
+
     html += `
                 </tbody>
             </table>
         </div>
     `;
-    
+
     container.innerHTML = html;
 }
 
@@ -375,7 +375,7 @@ function displayTableView(results, container) {
  */
 function displayListView(results, container) {
     let html = '';
-    
+
     for (const result of results) {
         html += `
             <div class="result-item">
@@ -389,20 +389,22 @@ function displayListView(results, container) {
                 </div>
                 <div class="result-links mt-2">
                     ${result.url ? `
-                        <a href="${result.url}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                            <i class="fas fa-link"></i> Main Link
-                        </a>
+                    <a href="${result.url}" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                        <i class="fas fa-link"></i> Main Link
+                    </a>
                     ` : ''}
+                    
                     ${result.getLink ? `
-                        <a href="${result.getLink}" class="btn btn-sm btn-success me-2" target="_blank">
-                            <i class="fas fa-download"></i> GET
+                        <a href="/proxy-download?url=${encodeURIComponent(result.getLink)}" class="btn btn-sm btn-success me-2" target="_blank">
+                            GET
                         </a>
                     ` : ''}
-                </div>
+                </div> 
             </div>
         `;
+        console.log("result Link: ", result.getLink);
     }
-    
+
     container.innerHTML = html;
 }
 
@@ -411,28 +413,28 @@ function displayListView(results, container) {
  */
 function setupFilterForm() {
     const filterForm = document.getElementById('filter-form');
-    
+
     if (!filterForm) return;
-    
-    filterForm.addEventListener('submit', async function(e) {
+
+    filterForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         // Get form values
         const fileInput = document.getElementById('filter-file');
         const format = document.getElementById('filter-format').value;
         const criteria = document.getElementById('filter-criteria').value.trim();
         const exportFormat = document.getElementById('filter-export-format').value;
-        
+
         if (!fileInput.files || fileInput.files.length === 0) {
             showError('Please select a file to filter');
             return;
         }
-        
+
         if (!criteria) {
             showError('Please enter filter criteria');
             return;
         }
-        
+
         // Validate JSON
         try {
             JSON.parse(criteria);
@@ -440,41 +442,41 @@ function setupFilterForm() {
             showError('Invalid JSON format for filter criteria. Please check your syntax.');
             return;
         }
-        
+
         // Show results section
         const resultsSection = document.getElementById('filter-results');
         resultsSection.classList.remove('d-none');
-        
+
         // Show loading state
         const loadingElement = resultsSection.querySelector('.filter-loading');
         const resultsContainer = resultsSection.querySelector('.filter-results-container');
         loadingElement.classList.remove('d-none');
         resultsContainer.innerHTML = '';
-        
+
         try {
             // Create form data
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('format', format);
             formData.append('filters', criteria);
-            
+
             if (exportFormat) {
                 formData.append('exportFormat', exportFormat);
             }
-            
+
             // Send filter request to API
             const response = await fetch('/api/filter', {
                 method: 'POST',
                 body: formData
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to filter results');
             }
-            
+
             const data = await response.json();
-            
+
             // Update results count
             const resultsCountElement = resultsSection.querySelector('.filter-results-count');
             if (resultsCountElement && data.output) {
@@ -486,10 +488,10 @@ function setupFilterForm() {
                     resultsCountElement.textContent = '0';
                 }
             }
-            
+
             // Display results
             displayFilterResults(data.output || 'No output from filter command');
-            
+
             // If files were exported, refresh files list
             if (exportFormat) {
                 setTimeout(loadFiles, 1000);
@@ -517,16 +519,16 @@ function setupFilterForm() {
  */
 function displayFilterResults(output) {
     const resultsContainer = document.querySelector('.filter-results-container');
-    
+
     if (!resultsContainer) return;
-    
+
     // Display the output in a more readable format
     if (output.includes('Filtered Results')) {
         // Try to parse the output to extract filtered results
         const lines = output.split('\n');
         let filteredResults = [];
         let currentItem = null;
-        
+
         for (const line of lines) {
             // Look for lines with item numbers (1. Title by Author)
             const itemMatch = line.match(/^(\d+)\.\s+(.+)\s+by\s+(.+)$/);
@@ -541,12 +543,12 @@ function displayFilterResults(output) {
                 };
             }
         }
-        
+
         // Add the last item
         if (currentItem) {
             filteredResults.push(currentItem);
         }
-        
+
         // Display in a table format
         if (filteredResults.length > 0) {
             let html = `
@@ -561,7 +563,7 @@ function displayFilterResults(output) {
                         </thead>
                         <tbody>
             `;
-            
+
             for (const result of filteredResults) {
                 html += `
                     <tr>
@@ -571,7 +573,7 @@ function displayFilterResults(output) {
                     </tr>
                 `;
             }
-            
+
             html += `
                         </tbody>
                     </table>
@@ -581,12 +583,12 @@ function displayFilterResults(output) {
                     <pre class="bg-light p-3 rounded small">${output}</pre>
                 </div>
             `;
-            
+
             resultsContainer.innerHTML = html;
             return;
         }
     }
-    
+
     // If we couldn't parse the results, display the raw output
     resultsContainer.innerHTML = `
         <pre class="bg-light p-3 rounded">${output}</pre>
@@ -598,12 +600,12 @@ function displayFilterResults(output) {
  */
 function setupAnalyzeForm() {
     const analyzeForm = document.getElementById('analyze-form');
-    
+
     if (!analyzeForm) return;
-    
-    analyzeForm.addEventListener('submit', async function(e) {
+
+    analyzeForm.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
+
         // Get form values
         const fileInput = document.getElementById('analyze-file');
         const format = document.getElementById('analyze-format').value;
@@ -611,56 +613,56 @@ function setupAnalyzeForm() {
         const keywordFields = Array.from(keywordFieldsSelect.selectedOptions).map(option => option.value);
         const topN = document.getElementById('top-n').value;
         const exportFormat = document.getElementById('analyze-export-format').value;
-        
+
         if (!fileInput.files || fileInput.files.length === 0) {
             showError('Please select a file to analyze');
             return;
         }
-        
+
         // Show results section
         const resultsSection = document.getElementById('analysis-results');
         resultsSection.classList.remove('d-none');
-        
+
         // Show loading state
         const loadingElement = resultsSection.querySelector('.analysis-loading');
         const resultsContainer = resultsSection.querySelector('.analysis-results-container');
         loadingElement.classList.remove('d-none');
         resultsContainer.innerHTML = '';
-        
+
         try {
             // Create form data
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('format', format);
-            
+
             if (keywordFields.length > 0) {
                 keywordFields.forEach(field => {
                     formData.append('keywordFields[]', field);
                 });
             }
-            
+
             formData.append('topN', topN);
-            
+
             if (exportFormat) {
                 formData.append('exportFormat', exportFormat);
             }
-            
+
             // Send analyze request to API
             const response = await fetch('/api/analyze', {
                 method: 'POST',
                 body: formData
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to analyze results');
             }
-            
+
             const data = await response.json();
-            
+
             // Display results
             displayAnalysisResults(data.output || 'No output from analyze command');
-            
+
             // If files were exported, refresh files list
             if (exportFormat) {
                 setTimeout(loadFiles, 1000);
@@ -688,45 +690,45 @@ function setupAnalyzeForm() {
  */
 function displayAnalysisResults(output) {
     const resultsContainer = document.querySelector('.analysis-results-container');
-    
+
     if (!resultsContainer) return;
-    
+
     // Parse the output to create a more user-friendly display
     if (output.includes('Data Analysis:')) {
         let html = '<div class="row">';
-        
+
         // Try to extract summary information
         const totalRecordsMatch = output.match(/Total records: (\d+)/);
         const columnsMatch = output.match(/Columns: (\d+)/);
-        
+
         if (totalRecordsMatch || columnsMatch) {
             html += '<div class="col-md-6"><div class="card mb-4"><div class="card-header">Summary</div><div class="card-body">';
-            
+
             if (totalRecordsMatch) {
                 html += `<p><strong>Total Records:</strong> <span class="stat-number">${totalRecordsMatch[1]}</span></p>`;
             }
-            
+
             if (columnsMatch) {
                 html += `<p><strong>Number of Columns:</strong> <span class="stat-number">${columnsMatch[1]}</span></p>`;
             }
-            
+
             html += '</div></div></div>';
         }
-        
+
         // Try to extract keyword information
         if (output.includes('Top Keywords:')) {
             html += '<div class="col-md-6"><div class="card mb-4"><div class="card-header">Top Keywords</div><div class="card-body">';
-            
+
             const keywordSections = output.split('Top Keywords:')[1].split(/From (.+):/g);
-            
+
             if (keywordSections.length > 1) {
                 for (let i = 1; i < keywordSections.length; i += 2) {
                     const fieldName = keywordSections[i].trim();
                     const keywordLines = keywordSections[i + 1].split('\n').filter(line => line.trim().startsWith('-'));
-                    
+
                     if (keywordLines.length > 0) {
                         html += `<h6>${fieldName}</h6><div class="keyword-list">`;
-                        
+
                         for (const line of keywordLines) {
                             const keywordMatch = line.match(/\s+\-\s+(.+): (\d+)/);
                             if (keywordMatch) {
@@ -735,17 +737,17 @@ function displayAnalysisResults(output) {
                                 html += `<div class="keyword-tag">${keyword} <span class="keyword-count">${count}</span></div>`;
                             }
                         }
-                        
+
                         html += '</div>';
                     }
                 }
             }
-            
+
             html += '</div></div></div>';
         }
-        
+
         html += '</div>';
-        
+
         // Add the full output in a collapsible section
         html += `
             <div class="card">
@@ -761,7 +763,7 @@ function displayAnalysisResults(output) {
                 </div>
             </div>
         `;
-        
+
         resultsContainer.innerHTML = html;
     } else {
         // If we couldn't parse the output in a structured way, just display it as-is
@@ -778,37 +780,37 @@ async function loadFiles() {
     const filesContainer = document.querySelector('.files-container');
     const loadingElement = document.querySelector('.files-loading');
     const noFilesElement = document.querySelector('.no-files');
-    
+
     if (!filesContainer || !loadingElement || !noFilesElement) return;
-    
+
     // Show loading state
     loadingElement.classList.remove('d-none');
     noFilesElement.classList.add('d-none');
     filesContainer.innerHTML = '';
-    
+
     try {
         // Fetch files from API
         const response = await fetch('/api/files');
-        
+
         if (!response.ok) {
             throw new Error('Failed to fetch files');
         }
-        
+
         const data = await response.json();
-        
+
         if (!data.files || data.files.length === 0) {
             // No files found
             noFilesElement.classList.remove('d-none');
             return;
         }
-        
+
         // Build HTML for files
         let html = '';
-        
+
         for (const file of data.files) {
             const fileExtension = file.name.split('.').pop().toLowerCase();
             let iconClass = 'fa-file';
-            
+
             // Set icon based on file type
             if (['csv', 'xlsx', 'xls'].includes(fileExtension)) {
                 iconClass = 'fa-file-csv';
@@ -819,26 +821,26 @@ async function loadFiles() {
             } else if (fileExtension === 'txt') {
                 iconClass = 'fa-file-alt';
             }
-            
+
             // Format date
             const fileDate = new Date(file.created).toLocaleString();
-            
+
             // Format file size
             let fileSize = file.size;
             let sizeUnit = 'B';
-            
+
             if (fileSize > 1024) {
                 fileSize = fileSize / 1024;
                 sizeUnit = 'KB';
             }
-            
+
             if (fileSize > 1024) {
                 fileSize = fileSize / 1024;
                 sizeUnit = 'MB';
             }
-            
+
             fileSize = fileSize.toFixed(2);
-            
+
             html += `
                 <div class="file-item" data-filename="${file.name}">
                     <div class="file-icon">
@@ -861,14 +863,14 @@ async function loadFiles() {
                 </div>
             `;
         }
-        
+
         filesContainer.innerHTML = html;
-        
+
         // Add event listeners for delete buttons
         document.querySelectorAll('.delete-file').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const filename = this.getAttribute('data-filename');
-                
+
                 if (filename) {
                     showDeleteConfirmation(filename);
                 }
@@ -896,35 +898,35 @@ function showDeleteConfirmation(filename) {
     const modal = document.getElementById('file-delete-modal');
     const filenameElement = document.getElementById('delete-filename');
     const confirmButton = document.getElementById('confirm-delete');
-    
+
     if (!modal || !filenameElement || !confirmButton) {
         console.error('Delete confirmation modal elements not found');
         return;
     }
-    
+
     // Set filename in modal
     filenameElement.textContent = filename;
-    
+
     // Set up confirm button
-    confirmButton.onclick = async function() {
+    confirmButton.onclick = async function () {
         try {
             // Send delete request to API
             const response = await fetch(`/api/files/${encodeURIComponent(filename)}`, {
                 method: 'DELETE'
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to delete file');
             }
-            
+
             // Close modal
             const bsModal = bootstrap.Modal.getInstance(modal);
             bsModal.hide();
-            
+
             // Refresh files list
             loadFiles();
-            
+
             // Show success notification
             const alertHTML = `
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -933,14 +935,14 @@ function showDeleteConfirmation(filename) {
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             `;
-            
+
             // Insert notification at the top of the files section
             const filesSection = document.getElementById('files-section');
             if (filesSection) {
                 const alertContainer = document.createElement('div');
                 alertContainer.innerHTML = alertHTML;
                 filesSection.insertBefore(alertContainer, filesSection.firstChild);
-                
+
                 // Auto-dismiss after 5 seconds
                 setTimeout(() => {
                     const alert = filesSection.querySelector('.alert');
@@ -955,7 +957,7 @@ function showDeleteConfirmation(filename) {
             showError(error.message || 'An error occurred while deleting the file');
         }
     };
-    
+
     // Show modal
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
@@ -969,16 +971,16 @@ function showDeleteConfirmation(filename) {
 function showError(message) {
     const modal = document.getElementById('error-modal');
     const messageElement = document.getElementById('error-message');
-    
+
     if (!modal || !messageElement) {
         console.error('Error modal elements not found');
         // Fallback to alert if modal elements not found
         alert(`Error: ${message}`);
         return;
     }
-    
+
     messageElement.textContent = message;
-    
+
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
 }
