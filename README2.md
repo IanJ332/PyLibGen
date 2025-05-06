@@ -1,16 +1,17 @@
-# PyLibGen# LibGen Explorer
+
+# PyLibGen – LibGen Explorer
 
 A Python-based tool that connects to the Library Genesis API using GUN (Graphical Database Engine) to help users find open-source CS books and textbooks.
 
 ## Motivation
 
-Nowadays, many CS books are available as open-source resources, and some textbooks are uploaded to places like GitHub or Library Genesis. This project aims to simplify the process of finding and collecting data from LibGen by providing a user-friendly interface and powerful search capabilities.
+Many CS books are now available as open-source resources, and some textbooks are uploaded to platforms like GitHub or Library Genesis. This project simplifies the process of finding and collecting data from LibGen by offering a user-friendly interface and powerful search capabilities.
 
 ## Features
 
-- Connect to LibGen API to search for books
+- Connect to the LibGen API to search for books
 - Extract and analyze data using Pandas
-- Rate search results based on keyword overlap and relevance
+- Rank search results based on keyword overlap and relevance
 - Generate summaries in document or text format
 - Web interface for easy interaction
 
@@ -24,46 +25,62 @@ Nowadays, many CS books are available as open-source resources, and some textboo
 - npm (Node.js package manager)
 - poetry
 
-### Setting up the environment
-
+### Setting up the Environment
+```markdown
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/libgen-explorer.git
    cd libgen-explorer
-   ```
-2. Install poetry:
-    Go to this website to download poetry [https://python-poetry.org/docs/](https://python-poetry.org/docs/)
-3. Create and activate a virtual environment:
+````
+
+2. Install Poetry:
+
+   Visit [https://python-poetry.org/docs/](https://python-poetry.org/docs/) and follow the installation guide.
+
+3. Initialize the Python environment:
+
    ```bash
-   # initialize poetry
    poetry init
+   ```
 
-   # install the dependancy (setup for windows powershell)
+4. Return to the root folder:
+
+   ```bash
+   cd ..
+   ```
+
+5. Install dependencies (PowerShell):
+
+   ```powershell
    Get-Content requirements.txt | Where-Object { $_ -notmatch '^\s*#' -and $_ -ne '' } | ForEach-Object { poetry add $_ }
+   ```
 
-   # go into the server directory
-   cd web 
+6. Go into the server directory:
 
-   # setup server
+   ```bash
+   cd web
    poetry run npm install
    ```
 
 ## Usage
 
-### Starting the application
+### Starting the Application
 
 1. Start the local server:
+
    ```bash
-   # run this in the web folder
+   # Run this in the web folder
    poetry run node server.js
    ```
 
 2. Open your web browser and navigate to:
+
    ```
    http://localhost:3000
    ```
 
-### Using the application
+### Using the Application
 
 1. Enter search terms in the search box
 2. Review the search results, which are ranked by relevance
@@ -74,25 +91,36 @@ Nowadays, many CS books are available as open-source resources, and some textboo
 
 ### Project Structure
 
-The project is organized as follows:
-
-- `libgen_explorer/` - Main Python package containing all the core functionality
-- `web/` - Web interface built with Node.js
-- `tests/` - Test files for the Python modules
+* `libgen_explorer/` - Main Python package containing all the core functionality
+* `web/` - Web interface built with Node.js
+* `tests/` - Test files for the Python modules
 
 ### Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Commit your changes: `git commit -m 'Add feature'`
-4. Push to the branch: `git push origin feature-name`
+2. Create a feature branch:
+
+   ```bash
+   git checkout -b feature-name
+   ```
+3. Commit your changes:
+
+   ```bash
+   git commit -m 'Add feature'
+   ```
+4. Push to the branch:
+
+   ```bash
+   git push origin feature-name
+   ```
 5. Submit a pull request
 
 ## Team
 
-- Ray Zhang - [rui.zhang@sjsu.edu](mailto:rui.zhang@sjsu.edu)
-- Ian Jiang - [jisheng.jiang@sjsu.edu](mailto:jisheng.jiang@sjsu.edu)
+* Ray Zhang - [rui.zhang@sjsu.edu](mailto:rui.zhang@sjsu.edu)
+* Ian Jiang - [jisheng.jiang@sjsu.edu](mailto:jisheng.jiang@sjsu.edu)
 
 ## License
 
-T
+TBD
+
