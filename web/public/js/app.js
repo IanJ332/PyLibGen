@@ -138,7 +138,7 @@ function setupSearchForm() {
             }
 
             const data = await response.json();
-            console.log("Search response data:", data);
+            // console.log("Search response data:", data);
 
             // Update results count
             const resultsCountElement = resultsSection.querySelector('.results-count');
@@ -154,7 +154,7 @@ function setupSearchForm() {
 
             // Parse results from output
             parsedResults = parseSearchResults(data.output || '');
-            console.log("Parsed results:", parsedResults);
+            // console.log("Parsed results:", parsedResults);
 
             // Display results based on current view
             displayResults(parsedResults);
@@ -186,7 +186,7 @@ function setupSearchForm() {
  * @returns {Array} - Array of parsed result objects
  */
 function parseSearchResults(output) {
-    console.log("Raw output to parse:", output); // Debug log
+    // console.log("Raw output to parse:", output); // Debug log
 
     const lines = output.split('\n');
     let inResults = false;
@@ -197,7 +197,7 @@ function parseSearchResults(output) {
         // Check if we're in the results section
         if (line.match(/Top\s+\d+\s+Results/) || line.includes('Top Results:')) {
             inResults = true;
-            console.log("Found results section marker:", line); // Debug log
+            // console.log("Found results section marker:", line); // Debug log
             continue;
         }
 
@@ -269,7 +269,7 @@ function parseSearchResults(output) {
         results.push(currentResult);
     }
 
-    console.log("Parsed results:", results); // Debug log
+    // console.log("Parsed results:", results); // Debug log
     return results;
 }
 
@@ -286,7 +286,7 @@ function displayResults(results) {
         return;
     }
 
-    console.log(`Displaying ${results.length} results in ${currentView} view`);
+    // console.log(`Displaying ${results.length} results in ${currentView} view`);
 
     if (!results || results.length === 0) {
         resultsContainer.innerHTML = `
@@ -402,7 +402,6 @@ function displayListView(results, container) {
                 </div> 
             </div>
         `;
-        console.log("result Link: ", result.getLink);
     }
 
     container.innerHTML = html;
