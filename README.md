@@ -26,10 +26,8 @@ Many CS books are now available as open-source resources, and some textbooks are
 - poetry
 
 ### Setting up the Environment
-```markdown
 1. Clone the repository:
-
-   ```bash
+```
    git clone https://github.com/yourusername/libgen-explorer.git
    cd libgen-explorer
 ````
@@ -93,26 +91,7 @@ Many CS books are now available as open-source resources, and some textbooks are
 * `libgen_explorer/` - Main Python package containing all the core functionality
 * `web/` - Web interface built with Node.js
 * `tests/` - Test files for the Python modules
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch:
-
-   ```bash
-   git checkout -b feature-name
-   ```
-3. Commit your changes:
-
-   ```bash
-   git commit -m 'Add feature'
-   ```
-4. Push to the branch:
-
-   ```bash
-   git push origin feature-name
-   ```
-5. Submit a pull request
+* `export_output` - Output files(even you don't choose to generate any report, it still will produce `.txt` file which inorder to let you check search history)
 
 ## Team
 
