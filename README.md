@@ -29,7 +29,7 @@ Many CS books are now available as open-source resources, and some textbooks are
 1. Clone the repository:
 ```
    git clone https://github.com/yourusername/libgen-explorer.git
-   cd libgen-explorer
+   cd libgen_explorer
 ````
 
 2. Install Poetry:
