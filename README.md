@@ -52,6 +52,9 @@ Many CS books are now available as open-source resources, and some textbooks are
 
    ```powershell
    Get-Content requirements.txt | Where-Object { $_ -notmatch '^\s*#' -and $_ -ne '' } | ForEach-Object { poetry add $_ }
+
+   #For Mac user you can use
+   cat requirements.txt | grep -v "^\s*#" | grep -v "^$" | xargs -I{} poetry add {}
    ```
 
 6. Go into the server directory:
