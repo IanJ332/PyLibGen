@@ -41,6 +41,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Create report_output directory if it doesn't exist
+const reportOutputDir = path.join(__dirname, '..', 'report_output');
+if (!fs.existsSync(reportOutputDir)) {
+  fs.mkdirSync(reportOutputDir, { recursive: true });
+}
+
 // GUN server setup
 const server = app.listen(port, () => {
   console.log(`LibGen Explorer web server running on port ${port}`);
@@ -76,8 +82,16 @@ app.post('/api/search', async (req, res) => {
       args.push('--output', path.join(__dirname, '..', 'output'));
     }
     
+    // Always add summary flag if generateSummary is true, regardless of export format
     if (generateSummary) {
       args.push('--summary');
+      
+      // If no export format is selected, specify 'txt' format for the summary
+      if (!exportFormat || exportFormat === 'None') {
+        args.push('--export', 'txt');
+        // Set output to report_output directory
+        args.push('--output', path.join(__dirname, '..', 'report_output'));
+      }
     }
 
     // Execute Python script
@@ -198,35 +212,71 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 // Get list of output files
 app.get('/api/files', (req, res) => {
   const outputDir = path.join(__dirname, '..', 'output');
-  // res.json({ status: 'ok', message: 'Server is running properly' });
-
-  if (!fs.existsSync(outputDir)) {
-    return res.json({ files: [] });
+  const reportOutputDir = path.join(__dirname, '..', 'report_output');
+  
+  let files = [];
+  
+  // Check and read output directory
+  if (fs.existsSync(outputDir)) {
+    const outputFiles = fs.readdirSync(outputDir)
+      .filter(file => {
+        const filePath = path.join(outputDir, file);
+        return fs.statSync(filePath).isFile();
+      })
+      .map(file => {
+        const filePath = path.join(outputDir, file);
+        const stats = fs.statSync(filePath);
+        return {
+          name: file,
+          path: `/api/files/${encodeURIComponent(file)}?dir=output`,
+          size: stats.size,
+          created: stats.ctime,
+          directory: 'output'
+        };
+      });
+    
+    files = files.concat(outputFiles);
   }
   
-  const files = fs.readdirSync(outputDir)
-    .filter(file => {
-      const filePath = path.join(outputDir, file);
-      return fs.statSync(filePath).isFile();
-    })
-    .map(file => {
-      const filePath = path.join(outputDir, file);
-      const stats = fs.statSync(filePath);
-      return {
-        name: file,
-        path: `/api/files/${file}`,
-        size: stats.size,
-        created: stats.ctime
-      };
-    });
+  // Check and read report_output directory
+  if (fs.existsSync(reportOutputDir)) {
+    const reportFiles = fs.readdirSync(reportOutputDir)
+      .filter(file => {
+        const filePath = path.join(reportOutputDir, file);
+        return fs.statSync(filePath).isFile();
+      })
+      .map(file => {
+        const filePath = path.join(reportOutputDir, file);
+        const stats = fs.statSync(filePath);
+        return {
+          name: file,
+          path: `/api/files/${encodeURIComponent(file)}?dir=report_output`,
+          size: stats.size,
+          created: stats.ctime,
+          directory: 'report_output'
+        };
+      });
     
+    files = files.concat(reportFiles);
+  }
+  
+  // Sort by creation date (newest first)
+  files.sort((a, b) => new Date(b.created) - new Date(a.created));
+  
   res.json({ files });
 });
 
 // Download a file
 app.get('/api/files/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(__dirname, '..', 'output', filename);
+  const directory = req.query.dir || 'output'; // Default to output directory
+  
+  let filePath;
+  if (directory === 'report_output') {
+    filePath = path.join(__dirname, '..', 'report_output', filename);
+  } else {
+    filePath = path.join(__dirname, '..', 'output', filename);
+  }
   
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found' });
@@ -238,7 +288,14 @@ app.get('/api/files/:filename', (req, res) => {
 // Delete a file
 app.delete('/api/files/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(__dirname, '..', 'output', filename);
+  const directory = req.query.dir || 'output'; // Default to output directory
+  
+  let filePath;
+  if (directory === 'report_output') {
+    filePath = path.join(__dirname, '..', 'report_output', filename);
+  } else {
+    filePath = path.join(__dirname, '..', 'output', filename);
+  }
   
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ error: 'File not found' });
@@ -248,7 +305,7 @@ app.delete('/api/files/:filename', (req, res) => {
   res.json({ success: true });
 });
 
-// Testing GUN realted with ISSUES_1
+// Testing GUN related with ISSUES_1
 app.get('/api/test-gun', (req, res) => {
   // Test writing to GUN
   const testData = { test: 'data', timestamp: Date.now() };

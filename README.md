@@ -70,7 +70,6 @@ Many CS books are now available as open-source resources, and some textbooks are
 1. Start the local server:
 
    ```bash
-   # Run this in the web folder
    poetry run node server.js
    ```
 
