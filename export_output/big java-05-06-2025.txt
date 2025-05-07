@@ -1,0 +1,122 @@
+LIBGEN SEARCH SUMMARY
+====================
+
+Search Query: big java
+Results Found: 15
+
+TOP RESULTS
+----------
+
+1. Big Java Late Objects 1118087887, 9781118087886 by Cay S. Horstmann (2012.0)
+   Format: pdf, Size: 164.00 MB
+
+2. Big Java: Early Objects [5 ed.] 1118431111, 9781118431115 by Cay S. Horstmann (2013.0)
+   Format: pdf, Size: 142.00 MB
+
+3. Big Java: Compatible with Java 5, 6 and 7   [4 ed.] 0470509481, 9780470509487 by Cay S. Horstmann (2009.0)
+   Format: pdf, Size: 42.00 MB
+
+4. Java EE 7: The Big Picture 0071837345, 9780071837347 by Dr. Danny Coward (2014.0)
+   Format: pdf, Size: 19.00 MB
+
+5. Big Java [3 ed.] 0470105542, 9780470105542 by Cay S. Horstmann (2007.0)
+   Format: pdf, Size: 13.00 MB
+
+6. Big Java. Compatible with Java 5, 6 and 7, 4th Edition     [4 ed.] 0470509481, 9780470509487 by Cay S. Horstmann (2009.0)
+   Format: pdf, Size: 39.00 MB
+
+7. Big Java Late Objects 1118087887, 9781118087886 by Cay S. Horstmann (2012.0)
+   Format: djvu, Size: 26.00 MB
+
+8. Big Java Late Objects, 2nd Edition 9781119321071 by Cay S. Horstmann (2016.0)
+   Format: pdf, Size: 30.00 MB
+
+9. Big Java: Early Objects [6 ed.] 1119056446, 9781119056447 by Cay S. Horstmann (2016.0)
+   Format: pdf, Size: 29.00 MB
+
+10. Java data analysis: data mining, big data analysis, NoSQL, and data visualization 9781787285651, 1787285650, 0130933740, 0321349806, 013600637X by Hubbard, John R (2017.0)
+   Format: epub, Size: 19.00 MB
+
+RATING EXPLANATIONS
+-----------------
+
+1. Big Java Late Objects 1118087887, 9781118087886 by Cay S. Horstmann
+   Overall Score: 0.56
+   - Title relevance to query: 0.73
+   - Author relevance to query: 0.00
+   - Recency score: 0.33
+   - Popularity score: 1.00
+   - Quality score: 0.65
+
+2. Big Java: Early Objects [5 ed.] 1118431111, 9781118431115 by Cay S. Horstmann
+   Overall Score: 0.54
+   - Title relevance to query: 0.71
+   - Author relevance to query: 0.00
+   - Recency score: 0.35
+   - Popularity score: 0.86
+   - Quality score: 0.65
+
+3. Big Java: Compatible with Java 5, 6 and 7   [4 ed.] 0470509481, 9780470509487 by Cay S. Horstmann
+   Overall Score: 0.52
+   - Title relevance to query: 0.73
+   - Author relevance to query: 0.00
+   - Recency score: 0.28
+   - Popularity score: 0.20
+   - Quality score: 0.90
+
+4. Java EE 7: The Big Picture 0071837345, 9780071837347 by Dr. Danny Coward
+   Overall Score: 0.52
+   - Title relevance to query: 0.73
+   - Author relevance to query: 0.00
+   - Recency score: 0.37
+   - Popularity score: 0.05
+   - Quality score: 0.90
+
+5. Big Java [3 ed.] 0470105542, 9780470105542 by Cay S. Horstmann
+   Overall Score: 0.51
+   - Title relevance to query: 0.76
+   - Author relevance to query: 0.00
+   - Recency score: 0.25
+   - Popularity score: 0.01
+   - Quality score: 0.90
+
+6. Big Java. Compatible with Java 5, 6 and 7, 4th Edition     [4 ed.] 0470509481, 9780470509487 by Cay S. Horstmann
+   Overall Score: 0.51
+   - Title relevance to query: 0.70
+   - Author relevance to query: 0.00
+   - Recency score: 0.28
+   - Popularity score: 0.18
+   - Quality score: 0.90
+
+7. Big Java Late Objects 1118087887, 9781118087886 by Cay S. Horstmann
+   Overall Score: 0.51
+   - Title relevance to query: 0.73
+   - Author relevance to query: 0.00
+   - Recency score: 0.33
+   - Popularity score: 0.10
+   - Quality score: 0.85
+
+8. Big Java Late Objects, 2nd Edition 9781119321071 by Cay S. Horstmann
+   Overall Score: 0.46
+   - Title relevance to query: 0.71
+   - Author relevance to query: 0.00
+   - Recency score: 0.41
+   - Popularity score: 0.12
+   - Quality score: 0.60
+
+9. Big Java: Early Objects [6 ed.] 1119056446, 9781119056447 by Cay S. Horstmann
+   Overall Score: 0.46
+   - Title relevance to query: 0.71
+   - Author relevance to query: 0.00
+   - Recency score: 0.41
+   - Popularity score: 0.12
+   - Quality score: 0.60
+
+10. Java data analysis: data mining, big data analysis, NoSQL, and data visualization 9781787285651, 1787285650, 0130933740, 0321349806, 013600637X by Hubbard, John R
+   Overall Score: 0.45
+   - Title relevance to query: 0.67
+   - Author relevance to query: 0.00
+   - Recency score: 0.44
+   - Popularity score: 0.05
+   - Quality score: 0.65
+

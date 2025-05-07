@@ -1,0 +1,434 @@
+{
+  "search_query": "big java",
+  "results_count": 15,
+  "timestamp": "2025-05-06T21:16:54.947817",
+  "top_results": [
+    {
+      "id": "1020148",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java Late Objects 1118087887, 9781118087886",
+      "publisher": "Wiley",
+      "year": 2012.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 171966464
+    },
+    {
+      "id": "1053707",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java: Early Objects [5\u00a0ed.] 1118431111, 9781118431115",
+      "publisher": "Wiley",
+      "year": 2013.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 148897792
+    },
+    {
+      "id": "723846",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java: Compatible with Java 5, 6 and 7   [4\u00a0ed.] 0470509481, 9780470509487",
+      "publisher": "Wiley",
+      "year": 2009.0,
+      "pages": 1170.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 44040192
+    },
+    {
+      "id": "1315307",
+      "author": "Dr. Danny Coward",
+      "title": "Java EE 7: The Big Picture 0071837345, 9780071837347",
+      "publisher": "McGraw-Hill Osborne Media",
+      "year": 2014.0,
+      "pages": 513.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 19922944
+    },
+    {
+      "id": "111356",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java [3\u00a0ed.] 0470105542, 9780470105542",
+      "publisher": "Wiley",
+      "year": 2007.0,
+      "pages": 1224.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 13631488
+    },
+    {
+      "id": "786832",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java. Compatible with Java 5, 6 and 7, 4th Edition     [4\u00a0ed.] 0470509481, 9780470509487",
+      "publisher": "Wiley",
+      "year": 2009.0,
+      "pages": 1170.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 40894464
+    },
+    {
+      "id": "1021928",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java Late Objects 1118087887, 9781118087886",
+      "publisher": "Wiley",
+      "year": 2012.0,
+      "pages": 1236.0,
+      "language": "English",
+      "extension": "djvu",
+      "filesize": 27262976
+    },
+    {
+      "id": "3785994",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java Late Objects, 2nd Edition 9781119321071",
+      "publisher": "Wiley",
+      "year": 2016.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 31457280
+    },
+    {
+      "id": "1549025",
+      "author": "Cay S. Horstmann",
+      "title": "Big Java: Early Objects [6\u00a0ed.] 1119056446, 9781119056447",
+      "publisher": "Wiley",
+      "year": 2016.0,
+      "language": "English",
+      "extension": "pdf",
+      "filesize": 30408704
+    },
+    {
+      "id": "2661682",
+      "author": "Hubbard, John R",
+      "title": "Java data analysis: data mining, big data analysis, NoSQL, and data visualization 9781787285651, 1787285650, 0130933740, 0321349806, 013600637X",
+      "publisher": "Packt Publishing",
+      "year": 2017.0,
+      "language": "English",
+      "extension": "epub",
+      "filesize": 19922944
+    }
+  ],
+  "ratings": [
+    {
+      "title": "Big Java Late Objects 1118087887, 9781118087886",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.5562129272896228,
+      "factors": {
+        "title_match": {
+          "score": 0.7333333333333333,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.73"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.32879593956289466,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.33"
+        },
+        "popularity": {
+          "score": 1.0,
+          "weight": 0.1,
+          "explanation": "Popularity score: 1.00"
+        },
+        "quality": {
+          "score": 0.6499999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.65"
+        }
+      }
+    },
+    {
+      "title": "Big Java: Early Objects [5\u00a0ed.] 1118431111, 9781118431115",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.5360996181688972,
+      "factors": {
+        "title_match": {
+          "score": 0.7142857142857143,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.71"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.34764417421931626,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.35"
+        },
+        "popularity": {
+          "score": 0.8562091503267973,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.86"
+        },
+        "quality": {
+          "score": 0.6499999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.65"
+        }
+      }
+    },
+    {
+      "title": "Big Java: Compatible with Java 5, 6 and 7   [4\u00a0ed.] 0470509481, 9780470509487",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.5215363025123023,
+      "factors": {
+        "title_match": {
+          "score": 0.7333333333333333,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.73"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.2794153127047222,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.28"
+        },
+        "popularity": {
+          "score": 0.20261437908496732,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.20"
+        },
+        "quality": {
+          "score": 0.8999999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.90"
+        }
+      }
+    },
+    {
+      "title": "Java EE 7: The Big Picture 0071837345, 9780071837347",
+      "author": "Dr. Danny Coward",
+      "overall_score": 0.5153622733550194,
+      "factors": {
+        "title_match": {
+          "score": 0.7333333333333333,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.73"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.36800181851751357,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.37"
+        },
+        "popularity": {
+          "score": 0.05228758169934641,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.05"
+        },
+        "quality": {
+          "score": 0.8999999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.90"
+        }
+      }
+    },
+    {
+      "title": "Big Java [3\u00a0ed.] 0470105542, 9780470105542",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.510419866089987,
+      "factors": {
+        "title_match": {
+          "score": 0.76,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.76"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.2511267654750331,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.25"
+        },
+        "popularity": {
+          "score": 0.013071895424836602,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.01"
+        },
+        "quality": {
+          "score": 0.8999999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.90"
+        }
+      }
+    },
+    {
+      "title": "Big Java. Compatible with Java 5, 6 and 7, 4th Edition     [4\u00a0ed.] 0470509481, 9780470509487",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.5062421848652434,
+      "factors": {
+        "title_match": {
+          "score": 0.7,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.70"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.2794153127047222,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.28"
+        },
+        "popularity": {
+          "score": 0.1830065359477124,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.18"
+        },
+        "quality": {
+          "score": 0.8999999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.90"
+        }
+      }
+    },
+    {
+      "title": "Big Java Late Objects 1118087887, 9781118087886",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.5060168488582503,
+      "factors": {
+        "title_match": {
+          "score": 0.7333333333333333,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.73"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.32879593956289466,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.33"
+        },
+        "popularity": {
+          "score": 0.09803921568627451,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.10"
+        },
+        "quality": {
+          "score": 0.85,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.85"
+        }
+      }
+    },
+    {
+      "title": "Big Java Late Objects, 2nd Edition 9781119321071",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.4595698394894386,
+      "factors": {
+        "title_match": {
+          "score": 0.7142857142857143,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.71"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.4143725312155804,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.41"
+        },
+        "popularity": {
+          "score": 0.12418300653594772,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.12"
+        },
+        "quality": {
+          "score": 0.5999999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.60"
+        }
+      }
+    },
+    {
+      "title": "Big Java: Early Objects [6\u00a0ed.] 1119056446, 9781119056447",
+      "author": "Cay S. Horstmann",
+      "overall_score": 0.45891624471819675,
+      "factors": {
+        "title_match": {
+          "score": 0.7142857142857143,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.71"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.4143725312155804,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.41"
+        },
+        "popularity": {
+          "score": 0.11764705882352941,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.12"
+        },
+        "quality": {
+          "score": 0.5999999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.60"
+        }
+      }
+    },
+    {
+      "title": "Java data analysis: data mining, big data analysis, NoSQL, and data visualization 9781787285651, 1787285650, 0130933740, 0321349806, 013600637X",
+      "author": "Hubbard, John R",
+      "overall_score": 0.4460123622956569,
+      "factors": {
+        "title_match": {
+          "score": 0.6666666666666666,
+          "weight": 0.4,
+          "explanation": "Title relevance to query: 0.67"
+        },
+        "author_match": {
+          "score": 0.0,
+          "weight": 0.2,
+          "explanation": "Author relevance to query: 0.00"
+        },
+        "recency": {
+          "score": 0.4411693745905556,
+          "weight": 0.1,
+          "explanation": "Recency score: 0.44"
+        },
+        "popularity": {
+          "score": 0.05228758169934641,
+          "weight": 0.1,
+          "explanation": "Popularity score: 0.05"
+        },
+        "quality": {
+          "score": 0.6499999999999999,
+          "weight": 0.2,
+          "explanation": "Quality score: 0.65"
+        }
+      }
+    }
+  ]
+}
